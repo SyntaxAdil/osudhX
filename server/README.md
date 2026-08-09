@@ -2,7 +2,7 @@
 
 **Base URL (production):** `[https://osudhx-server.vercel.app]`
 **Base URL (local):** `http://localhost:5000/api`
-**Repository:** [github.com/SyntaxAdil/osudhx-server](https://github.com/SyntaxAdil/osudhx-server)
+**Repository:** [github.com/SyntaxAdil/osudhx/server](https://github.com/SyntaxAdil/osudhx/server)
 **Version:** `v1` (unversioned path prefix — all routes under `/api`)
 
 This document is the API reference for the OSUDHX backend. It is written for engineers integrating against the API (the OSUDHX frontend, Postman, or any third-party client) and reflects the **planned/specified contract** of the system as defined in the project's system design.
