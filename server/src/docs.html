@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OSUDHX — API Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FBFBF8;
+    --panel:#FFFFFF;
+    --ink:#171B21;
+    --muted:#68707C;
+    --line:#E7E5DF;
+    --brand:#0E8F6B;
+    --brand-ink:#07543F;
+    --brand-soft:#E6F5EF;
+    --indigo:#2A3562;
+    --code-bg:#12161D;
+    --code-ink:#E7ECF3;
+    --get:#2563EB;
+    --post:#0E8F6B;
+    --patch:#B45309;
+    --delete:#DC2626;
+    --none:#68707C;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', -apple-system, Segoe UI, sans-serif;
+    font-size:15.5px;
+    line-height:1.65;
+  }
+  code, pre, .mono{font-family:'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;}
+
+  /* ---------- Layout ---------- */
+  .shell{display:grid;grid-template-columns:272px 1fr;min-height:100vh;}
+  .sidebar{
+    border-right:1px solid var(--line);
+    padding:28px 20px 40px;
+    position:sticky;top:0;height:100vh;overflow-y:auto;
+    background:var(--panel);
+  }
+  .brand{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+  .pill-mark{
+    width:26px;height:14px;border-radius:8px;
+    background:linear-gradient(90deg, var(--brand) 50%, var(--indigo) 50%);
+    flex:none;
+  }
+  .brand-name{font-weight:700;font-size:17px;letter-spacing:0.01em;}
+  .brand-sub{color:var(--muted);font-size:12.5px;margin:2px 0 22px;padding-left:36px;}
+  .nav-group{margin-bottom:18px;}
+  .nav-group h4{
+    font-size:11px;text-transform:uppercase;letter-spacing:0.08em;
+    color:var(--muted);margin:0 0 8px;font-weight:600;
+  }
+  .nav-group a{
+    display:block;color:var(--ink);text-decoration:none;
+    font-size:14px;padding:5px 8px;border-radius:6px;margin:1px 0;
+  }
+  .nav-group a:hover{background:var(--brand-soft);color:var(--brand-ink);}
+
+  main{padding:48px 56px 120px;max-width:920px;}
+  .top-links{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:6px;}
+  .top-links a{color:var(--brand-ink);text-decoration:none;font-size:13.5px;font-weight:600;border-bottom:1px solid var(--brand);}
+  h1{font-size:34px;margin:6px 0 8px;letter-spacing:-0.01em;}
+  .lede{color:var(--muted);font-size:16px;max-width:640px;margin-bottom:28px;}
+  .meta-row{display:flex;gap:22px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-bottom:36px;padding-bottom:24px;border-bottom:1px solid var(--line);}
+  .meta-row b{color:var(--ink);font-weight:600;}
+
+  section{margin-bottom:56px;}
+  h2{
+    font-size:22px;margin:0 0 4px;padding-top:6px;
+    border-top:1px solid var(--line);padding-top:20px;
+  }
+  h2:first-of-type{border-top:none;padding-top:0;}
+  h3.endpoint-title{
+    display:flex;align-items:center;gap:10px;
+    font-size:17px;margin:34px 0 10px;font-family:'IBM Plex Mono',monospace;font-weight:600;
+  }
+  p{margin:10px 0;}
+  .muted{color:var(--muted);}
+
+  .method{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;
+    padding:3px 9px;border-radius:6px;color:#fff;letter-spacing:0.02em;flex:none;
+  }
+  .m-GET{background:var(--get);}
+  .m-POST{background:var(--post);}
+  .m-PATCH{background:var(--patch);}
+  .m-DELETE{background:var(--delete);}
+
+  .badge{
+    font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;
+    border:1px solid var(--line);color:var(--muted);white-space:nowrap;
+  }
+  .badge.auth{color:var(--indigo);border-color:#D8DCEC;background:#F1F2F9;}
+  .badge.public{color:var(--brand-ink);border-color:#CFEBE0;background:var(--brand-soft);}
+
+  table{width:100%;border-collapse:collapse;margin:14px 0 22px;font-size:14px;}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);}
+  th{color:var(--muted);font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:0.04em;}
+  tr:last-child td{border-bottom:none;}
+  code.field{background:var(--brand-soft);color:var(--brand-ink);padding:1px 6px;border-radius:5px;font-size:13px;}
+
+  pre{
+    background:var(--code-bg);color:var(--code-ink);
+    padding:16px 18px;border-radius:var(--radius);
+    overflow-x:auto;font-size:13.2px;line-height:1.6;margin:10px 0 18px;
+  }
+  .block-label{font-size:11.5px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin:16px 0 6px;font-weight:600;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  @media (max-width:900px){.grid2{grid-template-columns:1fr;}}
+
+  .flow{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px 18px;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ink);
+    white-space:pre;overflow-x:auto;line-height:1.55;
+  }
+  .callout{
+    border-left:3px solid var(--brand);background:var(--brand-soft);
+    padding:12px 16px;border-radius:0 8px 8px 0;font-size:14px;color:var(--brand-ink);margin:16px 0;
+  }
+  footer{border-top:1px solid var(--line);padding:28px 56px;color:var(--muted);font-size:13px;}
+  @media (max-width:760px){
+    .shell{grid-template-columns:1fr;}
+    .sidebar{position:relative;height:auto;}
+    main{padding:32px 20px 100px;}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <nav class="sidebar">
+    <div class="brand"><span class="pill-mark"></span><span class="brand-name">OSUDHX</span></div>
+    <div class="brand-sub">API Reference</div>
+
+    <div class="nav-group">
+      <h4>Guide</h4>
+      <a href="#conventions">Conventions</a>
+      <a href="#authentication">Authentication</a>
+      <a href="#response-format">Response Format</a>
+      <a href="#error-handling">Error Handling</a>
+    </div>
+
+    <div class="nav-group">
+      <h4>Auth</h4>
+      <a href="#post-register">Register</a>
+      <a href="#post-login">Login</a>
+    </div>
+
+    <div class="nav-group">
+      <h4>Users</h4>
+      <a href="#users-create">Create user</a>
+      <a href="#users-list">List users</a>
+      <a href="#users-get">Get user</a>
+      <a href="#users-update">Update user</a>
+      <a href="#users-delete">Delete user</a>
+    </div>
+
+    <div class="nav-group">
+      <h4>Categories</h4>
+      <a href="#cat-create">Create category</a>
+      <a href="#cat-list">List / get category</a>
+      <a href="#cat-update">Update / delete</a>
+    </div>
+
+    <div class="nav-group">
+      <h4>Products</h4>
+      <a href="#prod-create">Create product</a>
+      <a href="#prod-list">List / search products</a>
+      <a href="#prod-update">Update / delete</a>
+    </div>
+
+    <div class="nav-group">
+      <h4>Orders</h4>
+      <a href="#ord-create">Create order</a>
+      <a href="#ord-list">List / get orders</a>
+      <a href="#ord-status">Update status</a>
+    </div>
+
+    <div class="nav-group">
+      <h4>Reviews &amp; Wishlist</h4>
+      <a href="#rev-create">Reviews</a>
+      <a href="#wish-create">Wishlist</a>
+    </div>
+
+    <div class="nav-group">
+      <h4>Reference</h4>
+      <a href="#data-models">Data models</a>
+      <a href="#enums">Enums</a>
+      <a href="#status-codes">Status codes</a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="top-links">
+      <a href="https://github.com/SyntaxAdil/osudhx-server" target="_blank">GitHub — osudhx-server</a>
+      <a href="https://github.com/SyntaxAdil/osudhx" target="_blank">GitHub — osudhx (client)</a>
+      <a href="https://osudhx.vercel.app" target="_blank">Live app ↗</a>
+    </div>
+    <h1>OSUDHX API Reference</h1>
+    <p class="lede">REST API for the OSUDHX Smart Pharmacy Management System — users, categories, products, orders, reviews, and wishlist, secured with JWT and role-based authorization.</p>
+
+    <div class="meta-row">
+      <div><b>Base URL (prod)</b> — [Live Backend URL]</div>
+      <div><b>Base URL (local)</b> — http://localhost:5000/api</div>
+      <div><b>Auth</b> — JWT Bearer</div>
+      <div><b>Format</b> — application/json</div>
+    </div>
+
+    <section id="conventions">
+      <h2>Conventions</h2>
+      <p>All bodies are JSON. Timestamps are ISO 8601 UTC. IDs are strings. Monetary fields (<code class="field">price</code>, <code class="field">totalAmount</code>, <code class="field">priceAtPurchase</code>) are decimals. Soft-deleted records never appear in list/detail responses.</p>
+      <p><span class="method m-GET" style="background:var(--indigo)">🔒</span> marks endpoints requiring a JWT. A role label (e.g. <em>Admin</em>) marks additional role restriction.</p>
+    </section>
+
+    <section id="authentication">
+      <h2>Authentication</h2>
+      <p>Stateless JWT Bearer authentication. Obtain a token from <code>POST /api/auth/login</code>, then send it on every protected request:</p>
+      <pre>Authorization: Bearer &lt;token&gt;</pre>
+      <p class="muted">Invalid/expired tokens → <code>401</code>. Valid token, wrong role → <code>403</code>.</p>
+    </section>
+
+    <section id="response-format">
+      <h2>Response Format</h2>
+      <div class="grid2">
+        <div>
+          <div class="block-label">Success</div>
+<pre>{
+  "success": true,
+  "message": "Product retrieved successfully",
+  "data": {}
+}</pre>
+        </div>
+        <div>
+          <div class="block-label">Error</div>
+<pre>{
+  "success": false,
+  "message": "Product not found",
+  "error": {}
+}</pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="error-handling">
+      <h2>Error Handling</h2>
+      <p>All errors pass through a centralized Express error-handling middleware, so the shape above is consistent for validation errors, auth failures, database errors, and unhandled exceptions.</p>
+    </section>
+
+    <!-- ================= AUTH ================= -->
+    <section id="auth-endpoints">
+      <h2>Auth</h2>
+
+      <h3 class="endpoint-title" id="post-register"><span class="method m-POST">POST</span> /api/auth/register <span class="badge public">Public</span></h3>
+      <div class="block-label">Request body</div>
+<pre>{
+  "name": "Ayesha Rahman",
+  "email": "ayesha@example.com",
+  "password": "StrongPassword123",
+  "role": "CUSTOMER"
+}</pre>
+      <div class="block-label">201 Created</div>
+<pre>{
+  "success": true,
+  "message": "User registered successfully",
+  "data": { "id": "usr_01h...", "name": "Ayesha Rahman", "email": "ayesha@example.com", "role": "CUSTOMER" }
+}</pre>
+      <p class="muted">Errors: 400 invalid input · 409 email already registered</p>
+
+      <h3 class="endpoint-title" id="post-login"><span class="method m-POST">POST</span> /api/auth/login <span class="badge public">Public</span></h3>
+      <div class="block-label">Request body</div>
+<pre>{ "email": "ayesha@example.com", "password": "StrongPassword123" }</pre>
+      <div class="block-label">200 OK</div>
+<pre>{
+  "success": true,
+  "message": "Login successful",
+  "data": { "token": "eyJhbGciOi...", "user": { "id": "usr_01h...", "role": "CUSTOMER" } }
+}</pre>
+      <p class="muted">Errors: 400 invalid input · 401 invalid credentials</p>
+    </section>
+
+    <!-- ================= USERS ================= -->
+    <section id="users">
+      <h2>Users</h2>
+
+      <h3 class="endpoint-title" id="users-create"><span class="method m-POST">POST</span> /api/users <span class="badge auth">🔒 Admin</span></h3>
+      <p>Create a user directly (admin-managed account creation).</p>
+
+      <h3 class="endpoint-title" id="users-list"><span class="method m-GET">GET</span> /api/users <span class="badge auth">🔒 Admin</span></h3>
+      <p>Query params: <code class="field">page</code>, <code class="field">limit</code>, <code class="field">search</code></p>
+
+      <h3 class="endpoint-title" id="users-get"><span class="method m-GET">GET</span> /api/users/:id <span class="badge auth">🔒 Admin / Self</span></h3>
+
+      <h3 class="endpoint-title" id="users-update"><span class="method m-PATCH">PATCH</span> /api/users/:id <span class="badge auth">🔒 Admin / Self</span></h3>
+
+      <h3 class="endpoint-title" id="users-delete"><span class="method m-DELETE">DELETE</span> /api/users/:id <span class="badge auth">🔒 Admin</span></h3>
+      <p class="muted">Soft delete — sets <code class="field">isDeleted = true</code>.</p>
+    </section>
+
+    <!-- ================= CATEGORIES ================= -->
+    <section id="categories">
+      <h2>Categories</h2>
+
+      <h3 class="endpoint-title" id="cat-create"><span class="method m-POST">POST</span> /api/categories <span class="badge auth">🔒 Pharmacist / Admin</span></h3>
+<pre>{ "name": "Pain Relief", "description": "Analgesics and anti-inflammatory medicines" }</pre>
+
+      <h3 class="endpoint-title" id="cat-list"><span class="method m-GET">GET</span> /api/categories <span class="badge public">Public</span></h3>
+      <h3 class="endpoint-title"><span class="method m-GET">GET</span> /api/categories/:id <span class="badge public">Public</span></h3>
+
+      <h3 class="endpoint-title" id="cat-update"><span class="method m-PATCH">PATCH</span> /api/categories/:id <span class="badge auth">🔒 Pharmacist / Admin</span></h3>
+      <h3 class="endpoint-title"><span class="method m-DELETE">DELETE</span> /api/categories/:id <span class="badge auth">🔒 Pharmacist / Admin</span></h3>
+    </section>
+
+    <!-- ================= PRODUCTS ================= -->
+    <section id="products">
+      <h2>Products</h2>
+
+      <h3 class="endpoint-title" id="prod-create"><span class="method m-POST">POST</span> /api/products <span class="badge auth">🔒 Pharmacist / Admin</span></h3>
+<pre>{
+  "name": "Paracetamol 500mg",
+  "description": "Pain and fever relief tablets",
+  "price": 2.50,
+  "stock": 500,
+  "brand": "Square Pharmaceuticals",
+  "genericName": "Paracetamol",
+  "expiryDate": "2027-06-30",
+  "status": "ACTIVE",
+  "categoryId": "cat_01h..."
+}</pre>
+
+      <h3 class="endpoint-title" id="prod-list"><span class="method m-GET">GET</span> /api/products <span class="badge public">Public</span></h3>
+      <p>Query params: <code class="field">search</code>, <code class="field">categoryId</code>, <code class="field">status</code>, <code class="field">page</code>, <code class="field">limit</code>, <code class="field">sortBy</code>, <code class="field">sortOrder</code></p>
+      <h3 class="endpoint-title"><span class="method m-GET">GET</span> /api/products/:id <span class="badge public">Public</span></h3>
+
+      <h3 class="endpoint-title" id="prod-update"><span class="method m-PATCH">PATCH</span> /api/products/:id <span class="badge auth">🔒 Pharmacist / Admin</span></h3>
+      <h3 class="endpoint-title"><span class="method m-DELETE">DELETE</span> /api/products/:id <span class="badge auth">🔒 Pharmacist / Admin</span></h3>
+    </section>
+
+    <!-- ================= ORDERS ================= -->
+    <section id="orders">
+      <h2>Orders</h2>
+
+      <h3 class="endpoint-title" id="ord-create"><span class="method m-POST">POST</span> /api/orders <span class="badge auth">🔒 Customer</span></h3>
+      <div class="block-label">Request body</div>
+<pre>{
+  "items": [
+    { "productId": "prd_01h...", "quantity": 2 },
+    { "productId": "prd_02h...", "quantity": 1 }
+  ]
+}</pre>
+      <div class="block-label">201 Created</div>
+<pre>{
+  "success": true,
+  "message": "Order created successfully",
+  "data": {
+    "id": "ord_01h...",
+    "status": "PENDING",
+    "totalAmount": 7.50,
+    "items": [
+      { "productId": "prd_01h...", "quantity": 2, "priceAtPurchase": 2.50 },
+      { "productId": "prd_02h...", "quantity": 1, "priceAtPurchase": 2.50 }
+    ]
+  }
+}</pre>
+      <div class="callout"><b>Stock-aware ordering:</b> every item's stock is checked before the order is committed. Insufficient stock returns <code>409 Conflict</code>. Each item's price is snapshotted into <code class="field">priceAtPurchase</code>.</div>
+      <div class="flow">Order Created
+    ↓
+Check Product Stock
+    ↓
+Enough Stock?  ── No ──▶ 409 Conflict
+    │
+   Yes
+    ↓
+Create Order → Decrease Stock</div>
+
+      <h3 class="endpoint-title" id="ord-list"><span class="method m-GET">GET</span> /api/orders <span class="badge auth">🔒 Admin / Pharmacist</span></h3>
+      <h3 class="endpoint-title"><span class="method m-GET">GET</span> /api/orders/:id <span class="badge auth">🔒 Owner / Admin / Pharmacist</span></h3>
+      <h3 class="endpoint-title"><span class="method m-GET">GET</span> /api/orders/customer/:customerId <span class="badge auth">🔒 Owner / Admin</span></h3>
+
+      <h3 class="endpoint-title" id="ord-status"><span class="method m-PATCH">PATCH</span> /api/orders/:id <span class="badge auth">🔒 Pharmacist / Admin</span></h3>
+<pre>{ "status": "CONFIRMED" }</pre>
+
+      <h3 class="endpoint-title"><span class="method m-DELETE">DELETE</span> /api/orders/:id <span class="badge auth">🔒 Admin</span></h3>
+    </section>
+
+    <!-- ================= REVIEWS ================= -->
+    <section id="reviews">
+      <h2>Reviews</h2>
+      <h3 class="endpoint-title" id="rev-create"><span class="method m-POST">POST</span> /api/reviews <span class="badge auth">🔒 Customer</span></h3>
+<pre>{ "productId": "prd_01h...", "rating": 5, "comment": "Worked quickly, good packaging." }</pre>
+      <h3 class="endpoint-title"><span class="method m-GET">GET</span> /api/reviews <span class="badge public">Public</span></h3>
+      <p>Query param: <code class="field">productId</code></p>
+      <h3 class="endpoint-title"><span class="method m-GET">GET</span> /api/reviews/:id <span class="badge public">Public</span></h3>
+      <h3 class="endpoint-title"><span class="method m-PATCH">PATCH</span> /api/reviews/:id <span class="badge auth">🔒 Owner / Admin</span></h3>
+      <h3 class="endpoint-title"><span class="method m-DELETE">DELETE</span> /api/reviews/:id <span class="badge auth">🔒 Owner / Admin</span></h3>
+    </section>
+
+    <!-- ================= WISHLIST ================= -->
+    <section id="wishlist">
+      <h2>Wishlist</h2>
+      <h3 class="endpoint-title" id="wish-create"><span class="method m-POST">POST</span> /api/wishlist <span class="badge auth">🔒 Customer</span></h3>
+<pre>{ "productId": "prd_01h..." }</pre>
+      <h3 class="endpoint-title"><span class="method m-GET">GET</span> /api/wishlist <span class="badge auth">🔒 Customer</span></h3>
+      <h3 class="endpoint-title"><span class="method m-DELETE">DELETE</span> /api/wishlist/:id <span class="badge auth">🔒 Owner</span></h3>
+    </section>
+
+    <!-- ================= DATA MODELS ================= -->
+    <section id="data-models">
+      <h2>Data Models</h2>
+
+      <div class="block-label">User</div>
+      <table><tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+      <tr><td><code class="field">id</code></td><td>string</td><td>Primary key</td></tr>
+      <tr><td><code class="field">email</code></td><td>string</td><td>Unique</td></tr>
+      <tr><td><code class="field">password</code></td><td>string</td><td>Hashed — never returned</td></tr>
+      <tr><td><code class="field">role</code></td><td>UserRole</td><td>ADMIN · PHARMACIST · CUSTOMER</td></tr>
+      <tr><td><code class="field">isDeleted</code></td><td>boolean</td><td>Soft delete flag</td></tr>
+      </table>
+
+      <div class="block-label">Product</div>
+      <table><tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+      <tr><td><code class="field">price</code></td><td>decimal</td><td></td></tr>
+      <tr><td><code class="field">stock</code></td><td>integer</td><td></td></tr>
+      <tr><td><code class="field">status</code></td><td>ProductStatus</td><td>ACTIVE · INACTIVE</td></tr>
+      <tr><td><code class="field">categoryId</code></td><td>string</td><td>FK → Category</td></tr>
+      </table>
+
+      <div class="block-label">Order / OrderItem</div>
+      <table><tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+      <tr><td><code class="field">status</code></td><td>OrderStatus</td><td>See enums</td></tr>
+      <tr><td><code class="field">totalAmount</code></td><td>decimal</td><td>Sum of item subtotals</td></tr>
+      <tr><td><code class="field">priceAtPurchase</code></td><td>decimal</td><td>Snapshot at order time</td></tr>
+      </table>
+    </section>
+
+    <section id="enums">
+      <h2>Enums</h2>
+      <div class="flow">UserRole:      ADMIN | PHARMACIST | CUSTOMER
+ProductStatus: ACTIVE | INACTIVE
+OrderStatus:   PENDING | CONFIRMED | PROCESSING | DELIVERED | CANCELLED</div>
+    </section>
+
+    <section id="status-codes">
+      <h2>Status Code Reference</h2>
+      <table>
+        <tr><th>Code</th><th>Meaning</th><th>When</th></tr>
+        <tr><td class="mono">200</td><td>OK</td><td>Successful GET / PATCH / DELETE</td></tr>
+        <tr><td class="mono">201</td><td>Created</td><td>Successful POST</td></tr>
+        <tr><td class="mono">400</td><td>Bad Request</td><td>Malformed body/params</td></tr>
+        <tr><td class="mono">401</td><td>Unauthorized</td><td>Missing/invalid/expired JWT</td></tr>
+        <tr><td class="mono">403</td><td>Forbidden</td><td>Authenticated, insufficient role</td></tr>
+        <tr><td class="mono">404</td><td>Not Found</td><td>Missing or soft-deleted resource</td></tr>
+        <tr><td class="mono">409</td><td>Conflict</td><td>Duplicate resource / insufficient stock</td></tr>
+        <tr><td class="mono">422</td><td>Unprocessable Entity</td><td>Failed validation rules</td></tr>
+        <tr><td class="mono">500</td><td>Internal Server Error</td><td>Unhandled exception</td></tr>
+      </table>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  OSUDHX API Reference · Generated from the project specification · <a href="https://github.com/SyntaxAdil/osudhx-server" style="color:var(--brand-ink)">osudhx-server</a>
+</footer>
+</body>
+</html>
