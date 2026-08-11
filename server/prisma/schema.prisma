@@ -10,10 +10,112 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-
 }
-model User {
-  id    Int    @id @default(autoincrement())
-  email String @unique
-  name  String?
+
+// ENUMS
+// for user role
+// i will use better auth
+// enum User_Role {
+//   customer
+//   admin
+//   seller
+// }
+
+// for STATUS of products
+enum PRODUCT_STATUS_ENUM {
+  available
+  sold
+  stockout
+}
+
+// for STATUS of order
+enum ORDER_STATUS {
+  pending
+  confirmed
+  shipped
+  delivered
+  cancelled
+}
+
+// better-auth use korbo ekane
+// model User {
+//   id        String    @id @default(uuid())
+//   name      String
+//   email     String    @unique
+//   password  String?
+//   phone     Int?
+//   role      User_Role @default(customer)
+//   createdAt DateTime  @default(now())
+//   updatedAt DateTime
+
+//   @@map("user")
+// }
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  image       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+
+  @@index([name])
+  @@map("category")
+}
+
+model Product {
+  id           String              @id @default(uuid())
+  name         String
+  description  String
+  price        Int
+  stock        Int
+  status       PRODUCT_STATUS_ENUM @default(available)
+  image        String
+  manufacturer String
+  categoryId   String
+  category     Category            @relation(fields: [categoryId], references: [id])
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  orderItems   OrderItem[]
+  isDeleted    Boolean             @default(false)
+
+  @@index([categoryId])
+  @@index([status])
+  @@map("product")
+}
+
+model Order {
+  id              String       @id @default(uuid())
+  userId          String
+  totalAmount     Int
+  shippingAddress String
+  phone           String
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  status          ORDER_STATUS @default(pending)
+  orderItems      OrderItem[]
+  isDeleted       Boolean      @default(false)
+
+  @@index([userId])
+  @@index([status])
+  @@map("order")
+}
+
+model OrderItem {
+  id        String @id @default(uuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Int
+
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_item")
 }
