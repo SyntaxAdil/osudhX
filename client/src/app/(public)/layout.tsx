@@ -10,7 +10,8 @@ export default function MainLayout({
     <div className="min-h-screen antialiased">
       <main className="min-h-full flex flex-col ">
         <Navbar></Navbar>
-        <main className="flex-1">{children}</main>
+        <div className="h-16"></div>
+        <main className="flex-1 bg-red-600">{children}</main>
         <Footer></Footer>
       </main>
     </div>

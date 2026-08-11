@@ -6,7 +6,7 @@ import { FeaturedMedicines } from "../../components/pages/public/home/featured-m
 const Home = () => {
   return (
     <main>
-      <div className="h-16"></div>
+      
       <Banner />
       <Capabilities />
       <FeaturedMedicines/>

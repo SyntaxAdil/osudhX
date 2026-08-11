@@ -32,8 +32,10 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
-        <QueryProvider>{children}</QueryProvider>
+      <body className="min-h-screen flex flex-col justify-between">
+        <QueryProvider>
+          <main className="flex-1">{children}</main>
+        </QueryProvider>
 
         <Toaster position="top-left"></Toaster>
       </body>
