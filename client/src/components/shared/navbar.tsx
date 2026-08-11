@@ -71,7 +71,7 @@ const Navbar = () => {
   };
   return (
     <header className="border-b border-accent fixed top-0 left-0 right-0 z-40 ">
-      <nav className="flex items-center justify-between container max-w-6xl mx-auto h-16 px-4 relative z-50 bg-background">
+      <nav className="flex items-center justify-between container max-w-7xl mx-auto h-16 px-4 relative z-50 bg-background">
         <h1 className="text-2xl font-bold">
           <Link href={"/"}>
             <Logo />

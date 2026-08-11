@@ -102,7 +102,7 @@ export function Footer() {
               </div>
 
               <div className="flex items-start gap-3">
-                <FaPhone className="mt-0.5 size-4 shrink-0 text-primary" />
+                <FaPhone className="mt-0.5 size-4 -scale-x-100 text-primary" />
                 <div>
                   <p className="text-xs text-muted-foreground">Phone</p>
                   <p className="mt-0.5 text-sm text-foreground">
@@ -137,7 +137,7 @@ export function Footer() {
 
         {/* Bottom Bar */}
         <div className="flex flex-col gap-3 border-t border-border/60 py-5 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <p>© 2026 OsudhX. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} OsudhX. All rights reserved.</p>
 
           <div className="flex items-center gap-4">
             <p>

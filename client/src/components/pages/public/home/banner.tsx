@@ -7,8 +7,8 @@ function Banner() {
       {/* Optional subtle background grid effect matching the aesthetic */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px]" />
 
-      <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-        <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+      <div className="relative mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
+        <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-6xl leading-16">
           Simplify Every Part of Your <br />
           <span className="text-primary">Pharmacy Operations.</span>
         </h1>
