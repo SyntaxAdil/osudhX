@@ -22,6 +22,7 @@ datasource db {
 // }
 
 // for STATUS of products
+
 enum PRODUCT_STATUS_ENUM {
   available
   sold
@@ -29,6 +30,7 @@ enum PRODUCT_STATUS_ENUM {
 }
 
 // for STATUS of order
+
 enum ORDER_STATUS {
   pending
   confirmed
@@ -40,7 +42,7 @@ enum ORDER_STATUS {
 // better-auth use korbo ekane
 // model User {
 //   id        String    @id @default(uuid())
-//   name      String
+//   name      String?
 //   email     String    @unique
 //   password  String?
 //   phone     Int?
@@ -51,6 +53,81 @@ enum ORDER_STATUS {
 //   @@map("user")
 // }
 
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  role          String?   @default("customer")
+  sessions      Session[]
+  accounts      Account[]
+  orders        Order[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model Jwks {
+  id         String    @id
+  publicKey  String
+  privateKey String
+  createdAt  DateTime
+  expiresAt  DateTime?
+
+  @@map("jwks")
+}
+
 model Category {
   id          String    @id @default(uuid())
   name        String
@@ -59,6 +136,7 @@ model Category {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   products    Product[]
+  isDeleted   Boolean   @default(false)
 
   @@index([name])
   @@map("category")
@@ -88,6 +166,7 @@ model Product {
 model Order {
   id              String       @id @default(uuid())
   userId          String
+  user            User         @relation(fields: [userId], references: [id])
   totalAmount     Int
   shippingAddress String
   phone           String
