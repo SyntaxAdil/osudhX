@@ -5,25 +5,30 @@ import { connectDatabase } from "./config/db";
 import env from "./config/env";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";
-const app = express();
+import router from "./routes";
 
+const app = express();
 
 app.use(
   cors({
     origin: env.clientUrl,
-    credentials: true, 
-  })
+    credentials: true,
+  }),
 );
 
-app.all("/api/auth/*splat", toNodeHandler(auth)); 
+app.all("/api/auth/*splat", toNodeHandler(auth));
 app.use(express.json());
 
 connectDatabase();
+
+// routes
+app.use("/api", router);
 
 // root
 app.get("/", (req: Request, res: Response) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
+
 // docs
 app.get("/docs", (req: Request, res: Response) => {
   res.sendFile(path.join(__dirname, "docs.html"));
