@@ -10,4 +10,6 @@ export interface Product {
   strength?: string;
   manufacturer?: string;
   stock?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
