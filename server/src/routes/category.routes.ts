@@ -1,41 +1,32 @@
 import { Router } from "express";
-import { categoryController } from "../controllers/category.controller";
+import categoryController from "../controllers/category.controller";
 import authMiddleware from "../middleware/authMiddleware";
 import checkRoleMiddleware from "../middleware/checkRoleMiddleware";
 
 const router = Router();
 
-// Public
-router.get("/", categoryController.getCategories);
+// Public routes
+router.get("/", categoryController.getAllCategories);
 router.get("/:id", categoryController.getCategoryById);
 
-// Seller only
+// Seller-only routes
 router.post(
   "/",
   authMiddleware,
   checkRoleMiddleware("seller"),
   categoryController.createCategory,
 );
-
 router.patch(
   "/:id",
   authMiddleware,
   checkRoleMiddleware("seller"),
   categoryController.updateCategory,
 );
-
 router.delete(
   "/:id",
   authMiddleware,
   checkRoleMiddleware("seller"),
   categoryController.deleteCategory,
-);
-
-router.patch(
-  "/:id/restore",
-  authMiddleware,
-  checkRoleMiddleware("seller"),
-  categoryController.restoreCategory,
 );
 
 export default router;

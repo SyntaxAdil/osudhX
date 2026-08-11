@@ -53,17 +53,19 @@ enum ORDER_STATUS {
 // }
 
 model User {
-  id            String    @id
+  id            String     @id
   name          String
   email         String
-  emailVerified Boolean   @default(false)
+  emailVerified Boolean    @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  role          User_Role @default(customer)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  role          User_Role  @default(customer)
   sessions      Session[]
   accounts      Account[]
   orders        Order[]
+  products      Product[]
+  wishlists     Wishlist[]
 
   @@unique([email])
   @@map("user")
@@ -144,6 +146,8 @@ model Category {
 model Product {
   id           String              @id @default(uuid())
   name         String
+  sellerId     String
+  user         User                @relation(fields: [sellerId], references: [id])
   description  String
   price        Int
   stock        Int
@@ -156,6 +160,7 @@ model Product {
   updatedAt    DateTime            @updatedAt
   orderItems   OrderItem[]
   isDeleted    Boolean             @default(false)
+  wishlists    Wishlist[]
 
   @@index([categoryId])
   @@index([status])
@@ -196,4 +201,18 @@ model OrderItem {
   @@index([orderId])
   @@index([productId])
   @@map("order_item")
+}
+
+model Wishlist {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+  @@map("wishlist")
 }

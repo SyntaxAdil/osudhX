@@ -1,160 +1,151 @@
 import type { Request, Response } from "express";
 import asyncHandler from "../utils/asyncHandler";
-import { orderService } from "../services/order.services";
+import sendResponse from "../lib/sendResponse";
+import ApiError from "../lib/ApiError";
+import orderService from "../services/order/order.service";
+import type {
+  CreateOrderData,
+  OrderQuery,
+  UpdateOrderStatusData,
+} from "../types/order.types";
 
-const getOrders = asyncHandler(
+/**
+ * POST /api/orders
+ * Access: customer
+ */
+const createOrder = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const query = {
-      page: Number(req.query.page) || 1,
-      limit: Number(req.query.limit) || 10,
+    const userId = req.user?.sub as string | undefined;
 
-      status:
-        typeof req.query.status === "string"
-          ? (req.query.status as
-              | "pending"
-              | "confirmed"
-              | "shipped"
-              | "delivered"
-              | "cancelled")
-          : undefined,
+    if (!userId) {
+      throw new ApiError(401, "Unauthorized");
+    }
 
-      userId:
-        typeof req.query.userId === "string" ? req.query.userId : undefined,
+    const payload = req.body as CreateOrderData;
+    const order = await orderService.createOrder(userId, payload);
 
-      sortOrder:
-        req.query.sortOrder === "asc" ? ("asc" as const) : ("desc" as const),
-    };
-
-    const result = await orderService.getOrders(query);
-
-    res.status(200).json({
-      success: true,
-      message: "Orders retrieved successfully",
-      data: result,
+    sendResponse(res, {
+      statusCode: 201,
+      message: "Order placed successfully",
+      data: order,
     });
   },
 );
 
+/**
+ * GET /api/orders
+ * Access: customer (own orders), seller (orders containing their products)
+ */
+const getAllOrders = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const requesterId = req.user?.sub as string | undefined;
+    const requesterRole = req.user?.role as "customer" | "seller" | undefined;
+    if (!requesterId || !requesterRole) {
+      throw new ApiError(401, "Unauthorized");
+    }
+    const query: OrderQuery = {
+      page: req.query.page ? Number(req.query.page) : undefined,
+      limit: req.query.limit ? Number(req.query.limit) : undefined,
+      status: req.query.status as OrderQuery["status"],
+      sortOrder: req.query.sortOrder as "asc" | "desc" | undefined,
+    };
+
+    const { orders, meta } = await orderService.getAllOrders(
+      query,
+      requesterId,
+      requesterRole,
+    );
+
+    sendResponse(res, {
+      message: "Orders retrieved successfully",
+      data: orders,
+      meta,
+    });
+  },
+);
+
+/**
+ * GET /api/orders/:id
+ * Access: order owner (customer) or seller with a product in the order
+ */
 const getOrderById = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
+    const requesterId = req.user?.sub as string | undefined;
+    const requesterRole = req.user?.role as "customer" | "seller" | undefined;
+    if (!requesterId || !requesterRole) {
+      throw new ApiError(401, "Unauthorized");
+    }
+
     const { id } = req.params;
+    const order = await orderService.getOrderById(
+      id as string,
+      requesterId,
+      requesterRole,
+    );
 
-    if (!id || Array.isArray(id)) {
-      res.status(400).json({
-        success: false,
-        message: "Invalid order ID",
-      });
-      return;
-    }
-
-    const order = await orderService.getOrderById(id);
-
-    if (!order) {
-      res.status(404).json({
-        success: false,
-        message: "Order not found",
-      });
-      return;
-    }
-
-    res.status(200).json({
-      success: true,
+    sendResponse(res, {
       message: "Order retrieved successfully",
       data: order,
     });
   },
 );
 
-const createOrder = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    if (!req.user?.sub) {
-      res.status(401).json({
-        success: false,
-        message: "Unauthorized",
-      });
-      return;
-    }
-
-    const order = await orderService.createOrder(req.user.sub, req.body);
-
-    res.status(201).json({
-      success: true,
-      message: "Order created successfully",
-      data: order,
-    });
-  },
-);
-
+/**
+ * PATCH /api/orders/:id/status
+ * Access: seller
+ */
 const updateOrderStatus = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { id } = req.params;
+    const sellerId = req.user?.sub as string | undefined;
 
-    if (!id || Array.isArray(id)) {
-      res.status(400).json({
-        success: false,
-        message: "Invalid order ID",
-      });
-      return;
+    if (!sellerId) {
+      throw new ApiError(401, "Unauthorized");
     }
 
-    const order = await orderService.updateOrderStatus(id, req.body.status);
+    const { id } = req.params;
+    const { status } = req.body as UpdateOrderStatusData;
 
-    res.status(200).json({
-      success: true,
+    const order = await orderService.updateOrderStatus(
+      id as string,
+      sellerId,
+      status,
+    );
+
+    sendResponse(res, {
       message: "Order status updated successfully",
       data: order,
     });
   },
 );
 
-const deleteOrder = asyncHandler(
+/**
+ * PATCH /api/orders/:id/cancel
+ * Access: customer (order owner)
+ */
+const cancelOrder = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { id } = req.params;
+    const userId = req.user?.sub as string | undefined;
 
-    if (!id || Array.isArray(id)) {
-      res.status(400).json({
-        success: false,
-        message: "Invalid order ID",
-      });
-      return;
+    if (!userId) {
+      throw new ApiError(401, "Unauthorized");
     }
 
-    await orderService.deleteOrder(id);
-
-    res.status(200).json({
-      success: true,
-      message: "Order deleted successfully",
-    });
-  },
-);
-
-const restoreOrder = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
+    const order = await orderService.cancelOrder(id as string, userId);
 
-    if (!id || Array.isArray(id)) {
-      res.status(400).json({
-        success: false,
-        message: "Invalid order ID",
-      });
-      return;
-    }
-
-    const order = await orderService.restoreOrder(id);
-
-    res.status(200).json({
-      success: true,
-      message: "Order restored successfully",
+    sendResponse(res, {
+      message: "Order cancelled successfully",
       data: order,
     });
   },
 );
 
-export const orderController = {
-  getOrders,
-  getOrderById,
+const orderController = {
   createOrder,
+  getAllOrders,
+  getOrderById,
   updateOrderStatus,
-  deleteOrder,
-  restoreOrder,
+  cancelOrder,
 };
+
+export default orderController;
