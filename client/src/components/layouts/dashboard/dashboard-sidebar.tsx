@@ -41,7 +41,7 @@ interface DashboardSidebarProps extends React.ComponentProps<typeof Sidebar> {
 
 const sellerNav = [
   { title: "Overview", href: "/dashboard", icon: LayoutDashboard },
-  { title: "Products", href: "/dashboard/products", icon: Package },
+  { title: "Medicines", href: "/dashboard/medicines", icon: Package },
   { title: "Inventory", href: "/dashboard/inventory", icon: Boxes },
   { title: "Orders", href: "/dashboard/orders", icon: ShoppingCart },
   { title: "Profile", href: "/dashboard/profile", icon: Settings },
