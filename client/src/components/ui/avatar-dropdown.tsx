@@ -12,6 +12,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { User } from "../../types/user";
+import { signOut } from "../../lib/auth-client";
+import { toast } from "sonner";
 
 export default function AvatarDropdown({ user }: { user: User }) {
   const { name: userName, email: userEmail, image: userImage } = user;
@@ -66,7 +68,7 @@ export default function AvatarDropdown({ user }: { user: User }) {
         <DropdownMenuGroup className="space-y-1">
           <DropdownMenuItem className="cursor-pointer rounded-md py-2.5 px-3 font-medium text-muted-foreground hover:text-foreground transition-colors">
             <LayoutDashboard className="size-4 mr-2.5 text-muted-foreground" />
-            <span>Dashboard Cockpit</span>
+            <span>Dashboard </span>
           </DropdownMenuItem>
           <DropdownMenuItem className="cursor-pointer rounded-md py-2.5 px-3 font-medium text-muted-foreground hover:text-foreground transition-colors">
             <UserCircle className="size-4 mr-2.5 text-muted-foreground" />
@@ -76,7 +78,13 @@ export default function AvatarDropdown({ user }: { user: User }) {
 
         <DropdownMenuSeparator className="my-1 bg-border/40" />
 
-        <DropdownMenuItem className="cursor-pointer rounded-md py-2.5 px-3 font-medium text-destructive focus:text-destructive focus:bg-destructive/10 transition-colors">
+        <DropdownMenuItem
+          className="cursor-pointer rounded-md py-2.5 px-3 font-medium text-destructive focus:text-destructive focus:bg-destructive/10 transition-colors"
+          onClick={async () => {
+            await signOut();
+            toast.success("Logout sucessfull");
+          }}
+        >
           <LogOutIcon className="size-4 mr-2.5" />
           <span>Sign Out</span>
         </DropdownMenuItem>

@@ -6,7 +6,7 @@ import env from "./config/env";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";
 const app = express();
-app.use(cors());
+
 
 app.use(
   cors({
