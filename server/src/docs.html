@@ -150,18 +150,9 @@
     </div>
 
     <div class="nav-group">
-      <h4>Auth</h4>
-      <a href="#post-register">Register</a>
-      <a href="#post-login">Login</a>
-    </div>
-
-    <div class="nav-group">
-      <h4>Users</h4>
-      <a href="#users-create">Create user</a>
-      <a href="#users-list">List users</a>
-      <a href="#users-get">Get user</a>
-      <a href="#users-update">Update user</a>
-      <a href="#users-delete">Delete user</a>
+      <h4>Auth (better-auth)</h4>
+      <a href="#auth-signup">Sign up</a>
+      <a href="#auth-signin">Sign in</a>
     </div>
 
     <div class="nav-group">
@@ -183,12 +174,14 @@
       <a href="#ord-create">Create order</a>
       <a href="#ord-list">List / get orders</a>
       <a href="#ord-status">Update status</a>
+      <a href="#ord-cancel">Cancel order</a>
     </div>
 
     <div class="nav-group">
-      <h4>Reviews &amp; Wishlist</h4>
-      <a href="#rev-create">Reviews</a>
-      <a href="#wish-create">Wishlist</a>
+      <h4>Wishlist</h4>
+      <a href="#wish-create">Add to wishlist</a>
+      <a href="#wish-list">List wishlist</a>
+      <a href="#wish-delete">Remove from wishlist</a>
     </div>
 
     <div class="nav-group">
@@ -206,26 +199,43 @@
       <a href="https://osudhx.vercel.app" target="_blank">Live app ↗</a>
     </div>
     <h1>OSUDHX API Reference</h1>
-    <p class="lede">REST API for the OSUDHX Smart Pharmacy Management System — users, categories, products, orders, reviews, and wishlist, secured with JWT and role-based authorization.</p>
+    <p class="lede">REST API for the OSUDHX Smart Pharmacy Management System — categories, products, orders, and wishlist, secured with a better-auth issued JWT and role-based authorization across two roles: <strong>customer</strong> and <strong>seller</strong>.</p>
 
     <div class="meta-row">
       <div><b>Base URL (prod)</b> — [Live Backend URL]</div>
       <div><b>Base URL (local)</b> — http://localhost:5000/api</div>
-      <div><b>Auth</b> — JWT Bearer</div>
+      <div><b>Auth</b> — JWT Bearer (issued by better-auth)</div>
       <div><b>Format</b> — application/json</div>
     </div>
 
     <section id="conventions">
       <h2>Conventions</h2>
-      <p>All bodies are JSON. Timestamps are ISO 8601 UTC. IDs are strings. Monetary fields (<code class="field">price</code>, <code class="field">totalAmount</code>, <code class="field">priceAtPurchase</code>) are decimals. Soft-deleted records never appear in list/detail responses.</p>
-      <p><span class="method m-GET" style="background:var(--indigo)">🔒</span> marks endpoints requiring a JWT. A role label (e.g. <em>Admin</em>) marks additional role restriction.</p>
+      <p>All bodies are JSON. Timestamps are ISO 8601 UTC. IDs are UUID strings. Monetary fields (<code class="field">price</code>, <code class="field">totalAmount</code>) are integers. Soft-deleted records (<code class="field">isDeleted = true</code>) never appear in list/detail responses — this applies to categories, products, and orders. Wishlist entries have no soft-delete flag; removing one is a hard delete.</p>
+      <p>Paginated list endpoints accept <code class="field">page</code> and <code class="field">limit</code> query params and return a <code class="field">meta</code> object alongside <code class="field">data</code>: <code class="field">{ page, limit, total, totalPages }</code>.</p>
+      <p><span class="badge auth">🔒</span> marks endpoints requiring a JWT. A role label (e.g. <em>Seller</em>) marks additional role restriction. Some endpoints also enforce resource ownership (e.g. a seller can only edit their own products) — noted per endpoint.</p>
     </section>
 
     <section id="authentication">
       <h2>Authentication</h2>
-      <p>Stateless JWT Bearer authentication. Obtain a token from <code>POST /api/auth/login</code>, then send it on every protected request:</p>
+      <p>Auth is fully handled by <strong>better-auth</strong> — there are no custom <code>/api/auth/register</code> or <code>/api/auth/login</code> endpoints in this API. Sign up and sign in against better-auth's own routes (mounted separately, typically under <code>/api/auth/*</code>), which issue a session and a JWT.</p>
+      <p>Send the JWT on every protected request:</p>
       <pre>Authorization: Bearer &lt;token&gt;</pre>
-      <p class="muted">Invalid/expired tokens → <code>401</code>. Valid token, wrong role → <code>403</code>.</p>
+      <p class="muted">The token is verified server-side against better-auth's JWKS endpoint. Invalid/expired tokens → <code>401</code>. Valid token, wrong role → <code>403</code>.</p>
+
+      <h3 class="endpoint-title" id="auth-signup"><span class="method m-POST">POST</span> better-auth sign-up endpoint <span class="badge public">Public</span></h3>
+      <div class="block-label">Request body (shape depends on better-auth config)</div>
+<pre>{
+  "name": "Ayesha Rahman",
+  "email": "ayesha@example.com",
+  "password": "StrongPassword123",
+  "role": "customer"
+}</pre>
+      <p class="muted"><code class="field">role</code> is either <code class="field">customer</code> or <code class="field">seller</code>.</p>
+
+      <h3 class="endpoint-title" id="auth-signin"><span class="method m-POST">POST</span> better-auth sign-in endpoint <span class="badge public">Public</span></h3>
+      <div class="block-label">Request body</div>
+<pre>{ "email": "ayesha@example.com", "password": "StrongPassword123" }</pre>
+      <p class="muted">Response includes the session/JWT used as the Bearer token above.</p>
     </section>
 
     <section id="response-format">
@@ -236,15 +246,16 @@
 <pre>{
   "success": true,
   "message": "Product retrieved successfully",
-  "data": {}
+  "data": {},
+  "meta": {}
 }</pre>
+          <p class="muted"><code class="field">meta</code> only appears on paginated list endpoints.</p>
         </div>
         <div>
           <div class="block-label">Error</div>
 <pre>{
   "success": false,
-  "message": "Product not found",
-  "error": {}
+  "message": "Product not found"
 }</pre>
         </div>
       </div>
@@ -252,96 +263,49 @@
 
     <section id="error-handling">
       <h2>Error Handling</h2>
-      <p>All errors pass through a centralized Express error-handling middleware, so the shape above is consistent for validation errors, auth failures, database errors, and unhandled exceptions.</p>
-    </section>
-
-    <!-- ================= AUTH ================= -->
-    <section id="auth-endpoints">
-      <h2>Auth</h2>
-
-      <h3 class="endpoint-title" id="post-register"><span class="method m-POST">POST</span> /api/auth/register <span class="badge public">Public</span></h3>
-      <div class="block-label">Request body</div>
-<pre>{
-  "name": "Ayesha Rahman",
-  "email": "ayesha@example.com",
-  "password": "StrongPassword123",
-  "role": "CUSTOMER"
-}</pre>
-      <div class="block-label">201 Created</div>
-<pre>{
-  "success": true,
-  "message": "User registered successfully",
-  "data": { "id": "usr_01h...", "name": "Ayesha Rahman", "email": "ayesha@example.com", "role": "CUSTOMER" }
-}</pre>
-      <p class="muted">Errors: 400 invalid input · 409 email already registered</p>
-
-      <h3 class="endpoint-title" id="post-login"><span class="method m-POST">POST</span> /api/auth/login <span class="badge public">Public</span></h3>
-      <div class="block-label">Request body</div>
-<pre>{ "email": "ayesha@example.com", "password": "StrongPassword123" }</pre>
-      <div class="block-label">200 OK</div>
-<pre>{
-  "success": true,
-  "message": "Login successful",
-  "data": { "token": "eyJhbGciOi...", "user": { "id": "usr_01h...", "role": "CUSTOMER" } }
-}</pre>
-      <p class="muted">Errors: 400 invalid input · 401 invalid credentials</p>
-    </section>
-
-    <!-- ================= USERS ================= -->
-    <section id="users">
-      <h2>Users</h2>
-
-      <h3 class="endpoint-title" id="users-create"><span class="method m-POST">POST</span> /api/users <span class="badge auth">🔒 Admin</span></h3>
-      <p>Create a user directly (admin-managed account creation).</p>
-
-      <h3 class="endpoint-title" id="users-list"><span class="method m-GET">GET</span> /api/users <span class="badge auth">🔒 Admin</span></h3>
-      <p>Query params: <code class="field">page</code>, <code class="field">limit</code>, <code class="field">search</code></p>
-
-      <h3 class="endpoint-title" id="users-get"><span class="method m-GET">GET</span> /api/users/:id <span class="badge auth">🔒 Admin / Self</span></h3>
-
-      <h3 class="endpoint-title" id="users-update"><span class="method m-PATCH">PATCH</span> /api/users/:id <span class="badge auth">🔒 Admin / Self</span></h3>
-
-      <h3 class="endpoint-title" id="users-delete"><span class="method m-DELETE">DELETE</span> /api/users/:id <span class="badge auth">🔒 Admin</span></h3>
-      <p class="muted">Soft delete — sets <code class="field">isDeleted = true</code>.</p>
+      <p>Every controller is wrapped in a shared <code class="field">asyncHandler</code>. Services throw a typed <code class="field">ApiError(statusCode, message)</code> for expected failures (not found, forbidden, conflict, bad request); anything unexpected falls back to <code>500</code>. Either way the response shape above stays consistent.</p>
     </section>
 
     <!-- ================= CATEGORIES ================= -->
     <section id="categories">
       <h2>Categories</h2>
 
-      <h3 class="endpoint-title" id="cat-create"><span class="method m-POST">POST</span> /api/categories <span class="badge auth">🔒 Pharmacist / Admin</span></h3>
-<pre>{ "name": "Pain Relief", "description": "Analgesics and anti-inflammatory medicines" }</pre>
+      <h3 class="endpoint-title" id="cat-create"><span class="method m-POST">POST</span> /api/categories <span class="badge auth">🔒 Seller</span></h3>
+<pre>{ "name": "Pain Relief", "description": "Analgesics and anti-inflammatory medicines", "image": "https://..." }</pre>
+      <p class="muted">Errors: 401 no token · 403 not a seller · 409 category name already exists</p>
 
       <h3 class="endpoint-title" id="cat-list"><span class="method m-GET">GET</span> /api/categories <span class="badge public">Public</span></h3>
+      <p>Query params: <code class="field">page</code>, <code class="field">limit</code>, <code class="field">search</code>, <code class="field">sortOrder</code></p>
       <h3 class="endpoint-title"><span class="method m-GET">GET</span> /api/categories/:id <span class="badge public">Public</span></h3>
 
-      <h3 class="endpoint-title" id="cat-update"><span class="method m-PATCH">PATCH</span> /api/categories/:id <span class="badge auth">🔒 Pharmacist / Admin</span></h3>
-      <h3 class="endpoint-title"><span class="method m-DELETE">DELETE</span> /api/categories/:id <span class="badge auth">🔒 Pharmacist / Admin</span></h3>
+      <h3 class="endpoint-title" id="cat-update"><span class="method m-PATCH">PATCH</span> /api/categories/:id <span class="badge auth">🔒 Seller</span></h3>
+      <h3 class="endpoint-title"><span class="method m-DELETE">DELETE</span> /api/categories/:id <span class="badge auth">🔒 Seller</span></h3>
+      <p class="muted">Soft delete — sets <code class="field">isDeleted = true</code>.</p>
     </section>
 
     <!-- ================= PRODUCTS ================= -->
     <section id="products">
       <h2>Products</h2>
 
-      <h3 class="endpoint-title" id="prod-create"><span class="method m-POST">POST</span> /api/products <span class="badge auth">🔒 Pharmacist / Admin</span></h3>
+      <h3 class="endpoint-title" id="prod-create"><span class="method m-POST">POST</span> /api/products <span class="badge auth">🔒 Seller</span></h3>
 <pre>{
   "name": "Paracetamol 500mg",
   "description": "Pain and fever relief tablets",
-  "price": 2.50,
+  "price": 25,
   "stock": 500,
-  "brand": "Square Pharmaceuticals",
-  "genericName": "Paracetamol",
-  "expiryDate": "2027-06-30",
-  "status": "ACTIVE",
+  "image": "https://...",
+  "manufacturer": "Square Pharmaceuticals",
   "categoryId": "cat_01h..."
 }</pre>
+      <p class="muted"><code class="field">status</code> is set automatically — <code class="field">available</code> if stock &gt; 0, otherwise <code class="field">stockout</code>. Errors: 401 · 403 · 404 category not found</p>
 
       <h3 class="endpoint-title" id="prod-list"><span class="method m-GET">GET</span> /api/products <span class="badge public">Public</span></h3>
       <p>Query params: <code class="field">search</code>, <code class="field">categoryId</code>, <code class="field">status</code>, <code class="field">page</code>, <code class="field">limit</code>, <code class="field">sortBy</code>, <code class="field">sortOrder</code></p>
       <h3 class="endpoint-title"><span class="method m-GET">GET</span> /api/products/:id <span class="badge public">Public</span></h3>
 
-      <h3 class="endpoint-title" id="prod-update"><span class="method m-PATCH">PATCH</span> /api/products/:id <span class="badge auth">🔒 Pharmacist / Admin</span></h3>
-      <h3 class="endpoint-title"><span class="method m-DELETE">DELETE</span> /api/products/:id <span class="badge auth">🔒 Pharmacist / Admin</span></h3>
+      <h3 class="endpoint-title" id="prod-update"><span class="method m-PATCH">PATCH</span> /api/products/:id <span class="badge auth">🔒 Seller (owner)</span></h3>
+      <h3 class="endpoint-title"><span class="method m-DELETE">DELETE</span> /api/products/:id <span class="badge auth">🔒 Seller (owner)</span></h3>
+      <p class="muted">Restricted to the seller who created the product — 403 if another seller tries to edit or delete it. Delete is a soft delete.</p>
     </section>
 
     <!-- ================= ORDERS ================= -->
@@ -351,6 +315,8 @@
       <h3 class="endpoint-title" id="ord-create"><span class="method m-POST">POST</span> /api/orders <span class="badge auth">🔒 Customer</span></h3>
       <div class="block-label">Request body</div>
 <pre>{
+  "shippingAddress": "House 12, Road 4, Dhanmondi, Dhaka",
+  "phone": "+8801XXXXXXXXX",
   "items": [
     { "productId": "prd_01h...", "quantity": 2 },
     { "productId": "prd_02h...", "quantity": 1 }
@@ -359,48 +325,40 @@
       <div class="block-label">201 Created</div>
 <pre>{
   "success": true,
-  "message": "Order created successfully",
+  "message": "Order placed successfully",
   "data": {
     "id": "ord_01h...",
-    "status": "PENDING",
-    "totalAmount": 7.50,
-    "items": [
-      { "productId": "prd_01h...", "quantity": 2, "priceAtPurchase": 2.50 },
-      { "productId": "prd_02h...", "quantity": 1, "priceAtPurchase": 2.50 }
+    "status": "pending",
+    "totalAmount": 75,
+    "orderItems": [
+      { "productId": "prd_01h...", "quantity": 2, "price": 25 },
+      { "productId": "prd_02h...", "quantity": 1, "price": 25 }
     ]
   }
 }</pre>
-      <div class="callout"><b>Stock-aware ordering:</b> every item's stock is checked before the order is committed. Insufficient stock returns <code>409 Conflict</code>. Each item's price is snapshotted into <code class="field">priceAtPurchase</code>.</div>
+      <div class="callout"><b>Stock-aware ordering:</b> the whole order runs inside a single Prisma transaction. Every item's availability and stock is checked before anything is committed, and each item's price is snapshotted onto <code class="field">OrderItem.price</code> — <code class="field">totalAmount</code> is always computed server-side, never trusted from the client.</div>
       <div class="flow">Order Created
     ↓
-Check Product Stock
-    ↓
-Enough Stock?  ── No ──▶ 409 Conflict
+Check Each Item: exists, available, enough stock?
+    │
+    ├── No ──▶ 400 Bad Request / 404 Not Found
     │
    Yes
     ↓
-Create Order → Decrease Stock</div>
+Create Order + OrderItems → Decrement Stock
+    ↓
+Stock hits 0? ──▶ Product status → stockout</div>
 
-      <h3 class="endpoint-title" id="ord-list"><span class="method m-GET">GET</span> /api/orders <span class="badge auth">🔒 Admin / Pharmacist</span></h3>
-      <h3 class="endpoint-title"><span class="method m-GET">GET</span> /api/orders/:id <span class="badge auth">🔒 Owner / Admin / Pharmacist</span></h3>
-      <h3 class="endpoint-title"><span class="method m-GET">GET</span> /api/orders/customer/:customerId <span class="badge auth">🔒 Owner / Admin</span></h3>
+      <h3 class="endpoint-title" id="ord-list"><span class="method m-GET">GET</span> /api/orders <span class="badge auth">🔒 Customer / Seller</span></h3>
+      <p class="muted">Customers see only their own orders. Sellers see orders that contain at least one of their own products. Query params: <code class="field">page</code>, <code class="field">limit</code>, <code class="field">status</code>, <code class="field">sortOrder</code></p>
+      <h3 class="endpoint-title"><span class="method m-GET">GET</span> /api/orders/:id <span class="badge auth">🔒 Owner / Seller-in-order</span></h3>
 
-      <h3 class="endpoint-title" id="ord-status"><span class="method m-PATCH">PATCH</span> /api/orders/:id <span class="badge auth">🔒 Pharmacist / Admin</span></h3>
-<pre>{ "status": "CONFIRMED" }</pre>
+      <h3 class="endpoint-title" id="ord-status"><span class="method m-PATCH">PATCH</span> /api/orders/:id/status <span class="badge auth">🔒 Seller</span></h3>
+<pre>{ "status": "confirmed" }</pre>
+      <p class="muted">Restricted to a seller with a product in the order. Cannot change status once an order is <code class="field">cancelled</code> or <code class="field">delivered</code>.</p>
 
-      <h3 class="endpoint-title"><span class="method m-DELETE">DELETE</span> /api/orders/:id <span class="badge auth">🔒 Admin</span></h3>
-    </section>
-
-    <!-- ================= REVIEWS ================= -->
-    <section id="reviews">
-      <h2>Reviews</h2>
-      <h3 class="endpoint-title" id="rev-create"><span class="method m-POST">POST</span> /api/reviews <span class="badge auth">🔒 Customer</span></h3>
-<pre>{ "productId": "prd_01h...", "rating": 5, "comment": "Worked quickly, good packaging." }</pre>
-      <h3 class="endpoint-title"><span class="method m-GET">GET</span> /api/reviews <span class="badge public">Public</span></h3>
-      <p>Query param: <code class="field">productId</code></p>
-      <h3 class="endpoint-title"><span class="method m-GET">GET</span> /api/reviews/:id <span class="badge public">Public</span></h3>
-      <h3 class="endpoint-title"><span class="method m-PATCH">PATCH</span> /api/reviews/:id <span class="badge auth">🔒 Owner / Admin</span></h3>
-      <h3 class="endpoint-title"><span class="method m-DELETE">DELETE</span> /api/reviews/:id <span class="badge auth">🔒 Owner / Admin</span></h3>
+      <h3 class="endpoint-title" id="ord-cancel"><span class="method m-PATCH">PATCH</span> /api/orders/:id/cancel <span class="badge auth">🔒 Customer (owner)</span></h3>
+      <p class="muted">Only the customer who placed the order, and only while it's still <code class="field">pending</code>. Stock is restored for every item.</p>
     </section>
 
     <!-- ================= WISHLIST ================= -->
@@ -408,44 +366,70 @@ Create Order → Decrease Stock</div>
       <h2>Wishlist</h2>
       <h3 class="endpoint-title" id="wish-create"><span class="method m-POST">POST</span> /api/wishlist <span class="badge auth">🔒 Customer</span></h3>
 <pre>{ "productId": "prd_01h..." }</pre>
-      <h3 class="endpoint-title"><span class="method m-GET">GET</span> /api/wishlist <span class="badge auth">🔒 Customer</span></h3>
-      <h3 class="endpoint-title"><span class="method m-DELETE">DELETE</span> /api/wishlist/:id <span class="badge auth">🔒 Owner</span></h3>
+      <p class="muted">Errors: 404 product not found · 409 already in wishlist</p>
+      <h3 class="endpoint-title" id="wish-list"><span class="method m-GET">GET</span> /api/wishlist <span class="badge auth">🔒 Customer</span></h3>
+      <p>Query params: <code class="field">page</code>, <code class="field">limit</code>, <code class="field">sortOrder</code></p>
+      <h3 class="endpoint-title"><span class="method m-GET">GET</span> /api/wishlist/:id <span class="badge auth">🔒 Customer (owner)</span></h3>
+      <h3 class="endpoint-title" id="wish-delete"><span class="method m-DELETE">DELETE</span> /api/wishlist/:id <span class="badge auth">🔒 Customer (owner)</span></h3>
+      <p class="muted">Hard delete — a wishlist entry is a simple save/unsave toggle with no other mutable state.</p>
     </section>
 
     <!-- ================= DATA MODELS ================= -->
     <section id="data-models">
       <h2>Data Models</h2>
 
-      <div class="block-label">User</div>
+      <div class="block-label">User <span class="muted" style="text-transform:none;font-weight:400;">(managed by better-auth)</span></div>
       <table><tr><th>Field</th><th>Type</th><th>Notes</th></tr>
       <tr><td><code class="field">id</code></td><td>string</td><td>Primary key</td></tr>
+      <tr><td><code class="field">name</code></td><td>string</td><td></td></tr>
       <tr><td><code class="field">email</code></td><td>string</td><td>Unique</td></tr>
-      <tr><td><code class="field">password</code></td><td>string</td><td>Hashed — never returned</td></tr>
-      <tr><td><code class="field">role</code></td><td>UserRole</td><td>ADMIN · PHARMACIST · CUSTOMER</td></tr>
+      <tr><td><code class="field">role</code></td><td>User_Role</td><td>customer · seller</td></tr>
+      </table>
+
+      <div class="block-label">Category</div>
+      <table><tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+      <tr><td><code class="field">id</code></td><td>string</td><td>Primary key</td></tr>
+      <tr><td><code class="field">name</code></td><td>string</td><td></td></tr>
+      <tr><td><code class="field">description</code></td><td>string?</td><td>Optional</td></tr>
+      <tr><td><code class="field">image</code></td><td>string?</td><td>Optional</td></tr>
       <tr><td><code class="field">isDeleted</code></td><td>boolean</td><td>Soft delete flag</td></tr>
       </table>
 
       <div class="block-label">Product</div>
       <table><tr><th>Field</th><th>Type</th><th>Notes</th></tr>
-      <tr><td><code class="field">price</code></td><td>decimal</td><td></td></tr>
+      <tr><td><code class="field">sellerId</code></td><td>string</td><td>FK → User (owner)</td></tr>
+      <tr><td><code class="field">price</code></td><td>integer</td><td></td></tr>
       <tr><td><code class="field">stock</code></td><td>integer</td><td></td></tr>
-      <tr><td><code class="field">status</code></td><td>ProductStatus</td><td>ACTIVE · INACTIVE</td></tr>
+      <tr><td><code class="field">manufacturer</code></td><td>string</td><td></td></tr>
+      <tr><td><code class="field">status</code></td><td>PRODUCT_STATUS_ENUM</td><td>available · sold · stockout</td></tr>
       <tr><td><code class="field">categoryId</code></td><td>string</td><td>FK → Category</td></tr>
+      <tr><td><code class="field">isDeleted</code></td><td>boolean</td><td>Soft delete flag</td></tr>
       </table>
 
       <div class="block-label">Order / OrderItem</div>
       <table><tr><th>Field</th><th>Type</th><th>Notes</th></tr>
-      <tr><td><code class="field">status</code></td><td>OrderStatus</td><td>See enums</td></tr>
-      <tr><td><code class="field">totalAmount</code></td><td>decimal</td><td>Sum of item subtotals</td></tr>
-      <tr><td><code class="field">priceAtPurchase</code></td><td>decimal</td><td>Snapshot at order time</td></tr>
+      <tr><td><code class="field">userId</code></td><td>string</td><td>FK → User (customer)</td></tr>
+      <tr><td><code class="field">status</code></td><td>ORDER_STATUS</td><td>See enums</td></tr>
+      <tr><td><code class="field">totalAmount</code></td><td>integer</td><td>Sum of item subtotals, server-computed</td></tr>
+      <tr><td><code class="field">shippingAddress</code></td><td>string</td><td></td></tr>
+      <tr><td><code class="field">phone</code></td><td>string</td><td></td></tr>
+      <tr><td><code class="field">isDeleted</code></td><td>boolean</td><td>Soft delete flag</td></tr>
+      <tr><td><code class="field">OrderItem.price</code></td><td>integer</td><td>Product price snapshotted at order time</td></tr>
+      </table>
+
+      <div class="block-label">Wishlist</div>
+      <table><tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+      <tr><td><code class="field">userId</code></td><td>string</td><td>FK → User (customer)</td></tr>
+      <tr><td><code class="field">productId</code></td><td>string</td><td>FK → Product</td></tr>
+      <tr><td>—</td><td>—</td><td>Unique on (userId, productId)</td></tr>
       </table>
     </section>
 
     <section id="enums">
       <h2>Enums</h2>
-      <div class="flow">UserRole:      ADMIN | PHARMACIST | CUSTOMER
-ProductStatus: ACTIVE | INACTIVE
-OrderStatus:   PENDING | CONFIRMED | PROCESSING | DELIVERED | CANCELLED</div>
+      <div class="flow">User_Role:            customer | seller
+PRODUCT_STATUS_ENUM:  available | sold | stockout
+ORDER_STATUS:          pending | confirmed | shipped | delivered | cancelled</div>
     </section>
 
     <section id="status-codes">
@@ -454,12 +438,11 @@ OrderStatus:   PENDING | CONFIRMED | PROCESSING | DELIVERED | CANCELLED</div>
         <tr><th>Code</th><th>Meaning</th><th>When</th></tr>
         <tr><td class="mono">200</td><td>OK</td><td>Successful GET / PATCH / DELETE</td></tr>
         <tr><td class="mono">201</td><td>Created</td><td>Successful POST</td></tr>
-        <tr><td class="mono">400</td><td>Bad Request</td><td>Malformed body/params</td></tr>
+        <tr><td class="mono">400</td><td>Bad Request</td><td>Malformed body, invalid state transition, or insufficient stock</td></tr>
         <tr><td class="mono">401</td><td>Unauthorized</td><td>Missing/invalid/expired JWT</td></tr>
-        <tr><td class="mono">403</td><td>Forbidden</td><td>Authenticated, insufficient role</td></tr>
+        <tr><td class="mono">403</td><td>Forbidden</td><td>Authenticated, wrong role or not the resource owner</td></tr>
         <tr><td class="mono">404</td><td>Not Found</td><td>Missing or soft-deleted resource</td></tr>
-        <tr><td class="mono">409</td><td>Conflict</td><td>Duplicate resource / insufficient stock</td></tr>
-        <tr><td class="mono">422</td><td>Unprocessable Entity</td><td>Failed validation rules</td></tr>
+        <tr><td class="mono">409</td><td>Conflict</td><td>Duplicate category name / duplicate wishlist entry</td></tr>
         <tr><td class="mono">500</td><td>Internal Server Error</td><td>Unhandled exception</td></tr>
       </table>
     </section>
@@ -468,7 +451,7 @@ OrderStatus:   PENDING | CONFIRMED | PROCESSING | DELIVERED | CANCELLED</div>
 </div>
 
 <footer>
-  OSUDHX API Reference · Generated from the project specification · <a href="https://github.com/SyntaxAdil/osudhx-server" style="color:var(--brand-ink)">osudhx-server</a>
+  OSUDHX API Reference · Updated for the current 2-role (customer/seller) implementation — Categories, Products, Orders, Wishlist · <a href="https://github.com/SyntaxAdil/osudhx-server" style="color:var(--brand-ink)">osudhx-server</a>
 </footer>
 </body>
 </html>
