@@ -2,20 +2,7 @@
 
 import { MedicineCard } from "@/components/card/medicine-card";
 import { SectionHeader } from "../../../shared/section-header";
-
-interface Product {
-  id: string;
-  name: string;
-  genericName?: string;
-  category: string;
-  price: number;
-  originalPrice?: number;
-  rating?: number;
-  image: string;
-  strength?: string;
-  manufacturer?: string;
-  stock?: number;
-}
+import { Product } from "../../../../types/product";
 
 const featuredProducts: Product[] = [
   {
@@ -25,7 +12,8 @@ const featuredProducts: Product[] = [
     category: "Cardiovascular",
     price: 1245,
     rating: 4.9,
-    image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&q=80&w=500",
+    image:
+      "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&q=80&w=500",
     strength: "20mg",
     manufacturer: "Pfizer",
     stock: 50,
@@ -37,7 +25,8 @@ const featuredProducts: Product[] = [
     category: "Antibiotic",
     price: 890,
     rating: 4.8,
-    image: "https://images.unsplash.com/photo-1471864190281-a93a3070b6de?auto=format&fit=crop&q=80&w=500",
+    image:
+      "https://images.unsplash.com/photo-1471864190281-a93a3070b6de?auto=format&fit=crop&q=80&w=500",
     strength: "500mg",
     manufacturer: "GSK",
     stock: 30,
@@ -49,7 +38,8 @@ const featuredProducts: Product[] = [
     category: "Pain Relief",
     price: 550,
     rating: 4.7,
-    image: "https://images.unsplash.com/photo-1550572017-edd951b55104?auto=format&fit=crop&q=80&w=500",
+    image:
+      "https://images.unsplash.com/photo-1550572017-edd951b55104?auto=format&fit=crop&q=80&w=500",
     strength: "400mg",
     manufacturer: "Kenvue",
     stock: 100,
@@ -61,7 +51,8 @@ const featuredProducts: Product[] = [
     category: "Respiratory",
     price: 3200,
     rating: 4.9,
-    image: "https://images.unsplash.com/photo-1583947215259-38e31be8751f?auto=format&fit=crop&q=80&w=500",
+    image:
+      "https://images.unsplash.com/photo-1583947215259-38e31be8751f?auto=format&fit=crop&q=80&w=500",
     strength: "90mcg",
     manufacturer: "Teva",
     stock: 15,
@@ -76,8 +67,8 @@ export function FeaturedMedicines() {
         <SectionHeader
           title="Featured Products"
           description="Top requested medicines available through our network."
-          actionText="View Catalog"
-          actionHref="/catalog"
+          actionText="View All"
+          actionHref="/medicines"
           align="left"
         />
 
