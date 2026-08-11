@@ -7,10 +7,10 @@ export default function MainLayout({
   children: React.ReactElement;
 }) {
   return (
-    <div className="min-h-screen  antialiased">
-      <main className="min-h-full flex flex-col">
+    <div className="min-h-screen antialiased">
+      <main className="min-h-full flex flex-col ">
         <Navbar></Navbar>
-        {children}
+        <main className="flex-1">{children}</main>
         <Footer></Footer>
       </main>
     </div>
