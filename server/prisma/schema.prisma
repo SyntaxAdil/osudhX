@@ -14,12 +14,12 @@ datasource db {
 
 // ENUMS
 // for user role
-// i will use better auth
-// enum User_Role {
-//   customer
-//   admin
-//   seller
-// }
+
+enum User_Role {
+  customer
+  admin
+  seller
+}
 
 // for STATUS of products
 
@@ -61,7 +61,7 @@ model User {
   image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  role          String?   @default("customer")
+  role          User_Role @default(customer)
   sessions      Session[]
   accounts      Account[]
   orders        Order[]
