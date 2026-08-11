@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, Store, UserCheck } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import Logo from "../ui/logo";
@@ -29,10 +29,18 @@ export function RegisterForm() {
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
-  } = useForm<RegisterFormData>();
+  } = useForm<RegisterFormData>({
+    defaultValues: {
+      role: "customer",
+    },
+  });
 
   const router = useRouter();
+
+  const selectedRole = watch("role");
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
@@ -40,8 +48,10 @@ export function RegisterForm() {
         email: data.email,
         password: data.password,
         name: data.name,
+        role: data.role,
         callbackURL: "/",
       });
+
 
       if (res.error) {
         toast.error(res.error.message || "Failed to create account");
@@ -96,6 +106,42 @@ export function RegisterForm() {
 
       <CardContent className="px-6 pt-2 pb-6">
         <div className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              I want to join as
+            </Label>
+
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setValue("role", "customer")}
+                className={`flex h-10 cursor-pointer items-center justify-center gap-2 rounded-xl border text-sm font-medium transition-all ${
+                  selectedRole === "customer"
+                    ? "border-primary bg-primary/10 text-primary shadow-sm"
+                    : "border-border/80 bg-background/50 text-muted-foreground hover:bg-muted/50"
+                }`}
+              >
+                <UserCheck className="h-4 w-4" />
+                Customer
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setValue("role", "seller")}
+                className={`flex h-10 cursor-pointer items-center justify-center gap-2 rounded-xl border text-sm font-medium transition-all ${
+                  selectedRole === "seller"
+                    ? "border-primary bg-primary/10 text-primary shadow-sm"
+                    : "border-border/80 bg-background/50 text-muted-foreground hover:bg-muted/50"
+                }`}
+              >
+                <Store className="h-4 w-4" />
+                Seller
+              </button>
+            </div>
+
+            <input type="hidden" {...register("role")} />
+          </div>
+
           <div className="relative flex items-center py-1">
             <div className="flex-grow border-t border-border/60" />
 

@@ -1,3 +1,4 @@
+
 "use client";
 import Link from "next/link";
 import { Button } from "../ui/button";
@@ -8,6 +9,18 @@ import { usePathname, useRouter } from "next/navigation";
 import AvatarDropdown from "../ui/avatar-dropdown";
 import { useSession } from "../../lib/auth-client";
 import Logo from "../ui/logo";
+import type { User } from "@/types/user";
+
+interface CustomUser {
+  id: string;
+  name: string;
+  email: string;
+  image?: string | null;
+  role?: "seller" | "customer" | string;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  emailVerified?: boolean;
+}
 
 const Navbar = () => {
   const NavLinks = [
@@ -15,20 +28,34 @@ const Navbar = () => {
     { id: 2, href: "/medicines", label: "Medicines" },
     { id: 3, href: "/categories", label: "Categories" },
   ];
-  //   navlink
-  const active = usePathname();
 
+  const active = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
 
   // user data
-  const { data: session, refetch, isPending } = useSession();
-  const user = session?.user;
+  const { data: session } = useSession();
+  const rawUser = session?.user as unknown as CustomUser | undefined;
 
-  // handle nav butttons
+  const formattedUser: User | undefined = rawUser
+    ? {
+        id: rawUser.id,
+        name: rawUser.name,
+        email: rawUser.email,
+        image: rawUser.image ?? null,
+        role: (rawUser.role === "seller" || rawUser.role === "customer"
+          ? rawUser.role
+          : "customer") as "seller" | "customer",
+        createdAt: rawUser.createdAt ? new Date(rawUser.createdAt) : new Date(),
+        updatedAt: rawUser.updatedAt ? new Date(rawUser.updatedAt) : new Date(),
+        emailVerified: rawUser.emailVerified ?? false,
+      }
+    : undefined;
+
+  // handle nav buttons
   const handleNavButtons = (className: string, isHide?: boolean) => {
-    return user ? (
+    return formattedUser ? (
       <div className={isHide ? "hidden md:block" : ""}>
-        <AvatarDropdown user={user} />
+        <AvatarDropdown user={formattedUser} />
       </div>
     ) : (
       <div className={className}>
@@ -43,18 +70,21 @@ const Navbar = () => {
           onClick={() => handleNavigation("/register")}
           className="px-5 rounded-md font-bold cursor-pointer"
         >
-          Start Writing
+          Get Started
         </Button>
       </div>
     );
   };
+
   // render nav links
   const renderLinks = (isMobile = false) =>
     NavLinks.map((link) => (
       <li key={`${isMobile ? "mobile" : "desktop"}-${link.id}`}>
         <Link
           onClick={() => setIsMenuOpen(false)}
-          className={` transition-colors duration-200 block font-medium py-2 ${active === link.href ? "text-primary" : "hover:text-primary"}`}
+          className={`transition-colors duration-200 block font-medium py-2 ${
+            active === link.href ? "text-primary" : "hover:text-primary"
+          }`}
           href={link.href}
         >
           {link.label}
@@ -69,8 +99,9 @@ const Navbar = () => {
     setIsMenuOpen((p) => !p);
     router.push(href);
   };
+
   return (
-    <header className="border-b border-accent fixed top-0 left-0 right-0 z-40 ">
+    <header className="border-b border-accent fixed top-0 left-0 right-0 z-40">
       <nav className="flex items-center justify-between container max-w-7xl mx-auto h-16 px-4 relative z-50 bg-background">
         <h1 className="text-2xl font-bold">
           <Link href={"/"}>
