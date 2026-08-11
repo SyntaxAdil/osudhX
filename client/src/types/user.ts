@@ -7,6 +7,7 @@ export interface User {
   name: string;
   password?: string | undefined | null;
   image?: string | null | undefined;
+  role?: "seller" | "customer"; // Extended for role-based separation
 }
 
 export interface RegisterFormData {

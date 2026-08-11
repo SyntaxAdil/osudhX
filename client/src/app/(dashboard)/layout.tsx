@@ -1,29 +1,10 @@
-import { TooltipProvider } from "../../components/ui/tooltip";
+// src/app/dashboard/layout.tsx
+import { DashboardLayoutClient } from "@/components/layouts/dashboard/dashboard-layout-client";
 
-export function DashboardLayout({
+export default function DashboardRootLayout({
   children,
 }: {
-  children: React.ReactElement;
+  children: React.ReactNode;
 }) {
-  return (
-    <div>
-      <TooltipProvider>{children}</TooltipProvider>
-    </div>
-  );
+  return <DashboardLayoutClient>{children}</DashboardLayoutClient>;
 }
-/*
-sidebar - 
-seller - [
-overview
-products
-inventory
-orders
-]
-
-customer [
-overview
-whislist
-my orders
-..
-]
-*/
