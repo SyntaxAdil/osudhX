@@ -14,6 +14,7 @@ import {
 import { User } from "../../types/user";
 import { signOut } from "../../lib/auth-client";
 import { toast } from "sonner";
+import Link from "next/link";
 
 export default function AvatarDropdown({ user }: { user: User }) {
   const { name: userName, email: userEmail, image: userImage } = user;
@@ -66,14 +67,18 @@ export default function AvatarDropdown({ user }: { user: User }) {
         <DropdownMenuSeparator className="my-1 bg-border/40" />
 
         <DropdownMenuGroup className="space-y-1">
-          <DropdownMenuItem className="cursor-pointer rounded-md py-2.5 px-3 font-medium text-muted-foreground hover:text-foreground transition-colors">
-            <LayoutDashboard className="size-4 mr-2.5 text-muted-foreground" />
-            <span>Dashboard </span>
-          </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer rounded-md py-2.5 px-3 font-medium text-muted-foreground hover:text-foreground transition-colors">
-            <UserCircle className="size-4 mr-2.5 text-muted-foreground" />
-            <span>Profile & Settings</span>
-          </DropdownMenuItem>
+          <Link href={"/dashboard"}>
+            <DropdownMenuItem className="cursor-pointer rounded-md py-2.5 px-3 font-medium text-muted-foreground hover:text-foreground transition-colors">
+              <LayoutDashboard className="size-4 mr-2.5 text-muted-foreground" />
+              <span>Dashboard </span>
+            </DropdownMenuItem>
+          </Link>
+          <Link href={"/dashboard/profile"}>
+            <DropdownMenuItem className="cursor-pointer rounded-md py-2.5 px-3 font-medium text-muted-foreground hover:text-foreground transition-colors">
+              <UserCircle className="size-4 mr-2.5 text-muted-foreground" />
+              <span>Profile & Settings</span>
+            </DropdownMenuItem>
+          </Link>
         </DropdownMenuGroup>
 
         <DropdownMenuSeparator className="my-1 bg-border/40" />
