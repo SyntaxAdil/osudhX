@@ -40,3 +40,22 @@ export interface CategoryApiResponse<T> {
   data: T;
   meta?: PaginationMeta;
 }
+
+export interface CategoryRow {
+  id: string;
+  name: string;
+  description?: string;
+  image?: string;
+  productsCount?: number;
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+}
+
+export interface CategoryFormData {
+  name: string;
+  description: string;
+}

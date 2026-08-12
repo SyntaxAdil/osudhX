@@ -8,6 +8,7 @@ const authMiddleware = async (
 ): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
+console.log("Incoming Authorization header:", authHeader);
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       res.status(401).json({

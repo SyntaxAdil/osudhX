@@ -1,14 +1,20 @@
 import { createAuthClient } from "better-auth/react";
-import { inferAdditionalFields } from "better-auth/client/plugins";
+import {
+  inferAdditionalFields,
+  jwtClient,
+} from "better-auth/client/plugins";
 
 export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000",
+  baseURL:
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000",
 
   fetchOptions: {
     credentials: "include",
   },
 
   plugins: [
+    jwtClient(),
+
     inferAdditionalFields({
       user: {
         role: {
@@ -19,4 +25,9 @@ export const authClient = createAuthClient({
   ],
 });
 
-export const { signIn, signUp, signOut, useSession } = authClient;
+export const {
+  signIn,
+  signUp,
+  signOut,
+  useSession,
+} = authClient;
