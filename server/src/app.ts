@@ -17,10 +17,19 @@ app.use(
 );
 
 app.all("/api/auth/*splat", toNodeHandler(auth));
+
 app.use(express.json());
 
 connectDatabase();
 
 app.use("/api", router);
+
+app.get("/", (_req: Request, res: Response) => {
+  res.sendFile(path.join(process.cwd(), "public", "index.html"));
+});
+
+app.get("/docs", (_req: Request, res: Response) => {
+  res.sendFile(path.join(process.cwd(), "public", "docs.html"));
+});
 
 export default app;
