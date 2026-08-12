@@ -5,8 +5,7 @@ node_modules
 out
 dist
 *.tgz
-api/index.js
-
+api/
 # code coverage
 coverage
 *.lcov
