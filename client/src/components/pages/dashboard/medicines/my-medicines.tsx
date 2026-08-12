@@ -76,7 +76,11 @@ export default function MyMedicines() {
   }, []);
 
   React.useEffect(() => {
-    setTimeout(() => fetchMedicines(), 0);
+    const timer = setTimeout(() => {
+      fetchMedicines();
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, [fetchMedicines]);
 
   const handleOpenAddModal = () => {
@@ -93,9 +97,13 @@ export default function MyMedicines() {
 
   const handleDeleteMedicine = async (id: string) => {
     try {
-      await apiFetch<ApiResponse<null>>(`/api/products/${id}`, {
-        method: "DELETE",
-      });
+      await apiFetch<ApiResponse<null>>(
+        `/api/products/${id}`,
+        {
+          method: "DELETE",
+        },
+        true,
+      );
 
       setMedicines((prev) => prev.filter((item) => item.id !== id));
 
@@ -134,6 +142,7 @@ export default function MyMedicines() {
               categoryId: data.category,
             }),
           },
+          true,
         );
 
         setMedicines((prev) => [mapProduct(result.data), ...prev]);
@@ -160,6 +169,7 @@ export default function MyMedicines() {
               categoryId: data.category,
             }),
           },
+          true,
         );
 
         const updatedMedicine = mapProduct(result.data);
@@ -198,7 +208,8 @@ export default function MyMedicines() {
         .includes(searchQuery.toLowerCase());
 
       const matchesCategory =
-        selectedCategory === "All" || medicine.category === selectedCategory;
+        selectedCategory === "All" ||
+        medicine.category === selectedCategory;
 
       return matchesSearch && matchesCategory;
     });
@@ -210,7 +221,7 @@ export default function MyMedicines() {
         onEdit: handleOpenEditModal,
         onDelete: handleDeleteMedicine,
       }),
-    [medicines],
+    [],
   );
 
   return (
@@ -251,7 +262,9 @@ export default function MyMedicines() {
           {categories.map((category) => (
             <Button
               key={category}
-              variant={selectedCategory === category ? "default" : "outline"}
+              variant={
+                selectedCategory === category ? "default" : "outline"
+              }
               size="sm"
               onClick={() => setSelectedCategory(category)}
               className="whitespace-nowrap rounded-xl text-xs"
