@@ -13,7 +13,6 @@ const validateToken = async (token: string): Promise<JWTPayload> => {
 
     return payload;
   } catch (error) {
-    
     console.error("Token validation failed:", error);
     throw new Error(
       error instanceof Error ? error.message : "Invalid or expired token",
