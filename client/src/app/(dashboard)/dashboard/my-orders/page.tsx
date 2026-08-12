@@ -1,9 +1,5 @@
-import React from 'react'
+import MyOrders from "../../../../components/pages/dashboard/my-orders/my-orders";
 
-const MyOrders = () => {
-  return (
-    <div>MyMedicines</div>
-  )
+export default function OrdersPage() {
+  return <MyOrders />;
 }
-
-export default MyOrders
