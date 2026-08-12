@@ -6,12 +6,15 @@
   "devDependencies": {
     "@types/bun": "latest",
     "@types/pg": "^8.21.0",
+    "esbuild": "^0.28.2",
     "typescript": "~5.9.2"
   },
   "scripts": {
     "dev": "bun --watch src/server.ts",
     "build": "prisma generate",
-    "start": "bun src/server.ts"
+    "start": "bun src/server.ts",
+    "vercel-build": "prisma generate && bun run build:api",
+    "build:api": "bunx esbuild api/index.ts --bundle --platform=node --format=esm --target=node20 --packages=external --outfile=api/index.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.1",

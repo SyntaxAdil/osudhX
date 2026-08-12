@@ -23,12 +23,4 @@ connectDatabase();
 
 app.use("/api", router);
 
-app.get("/", (req: Request, res: Response) => {
-  res.sendFile(path.join(process.cwd(), "public", "index.html"));
-});
-
-app.get("/docs", (req: Request, res: Response) => {
-  res.sendFile(path.join(process.cwd(), "public", "docs.html"));
-});
-
 export default app;
