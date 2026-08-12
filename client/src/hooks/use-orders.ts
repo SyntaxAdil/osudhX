@@ -70,7 +70,8 @@ export const useUpdateOrderStatus = () => {
     }: {
       id: string;
       data: UpdateOrderStatusRequest;
-    }) => orderService.updateOrderStatus(id, data),
+    }) =>
+      orderService.updateOrderStatus(id, data),
 
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({

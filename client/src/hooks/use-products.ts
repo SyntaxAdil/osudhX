@@ -70,7 +70,8 @@ export const useUpdateProduct = () => {
     }: {
       id: string;
       data: UpdateProductRequest;
-    }) => productService.updateProduct(id, data),
+    }) =>
+      productService.updateProduct(id, data),
 
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({

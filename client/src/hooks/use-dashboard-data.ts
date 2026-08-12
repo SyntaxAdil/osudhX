@@ -1,7 +1,9 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { apiFetch } from "@/lib/api";
+
+import { orderService } from "@/services/order.service";
+import { productService } from "@/services/product.service";
 
 interface ApiProduct {
   id: string;
@@ -18,31 +20,41 @@ interface ApiOrder {
   orderItems?: unknown[];
 }
 
-interface DashboardApiResponse<T> {
-  success: boolean;
-  data: T;
-  meta?: { total?: number };
-}
-
 export function useDashboard() {
   const productsQuery = useQuery({
     queryKey: ["dashboard", "products"],
-    queryFn: () =>
-      apiFetch<DashboardApiResponse<ApiProduct[]>>("/api/products?limit=100"),
+    queryFn: async () => {
+      const result = await productService.getProducts({
+        limit: 100,
+      });
+
+      return result;
+    },
   });
 
   const ordersQuery = useQuery({
     queryKey: ["dashboard", "orders"],
-    queryFn: () =>
-      apiFetch<DashboardApiResponse<ApiOrder[]>>("/api/orders?page=1&limit=5"),
+    queryFn: async () => {
+      const result = await orderService.getOrders({
+        page: 1,
+        limit: 5,
+      });
+
+      return result;
+    },
   });
 
-  const products: ApiProduct[] = productsQuery.data?.data || [];
-  const orders: ApiOrder[] = ordersQuery.data?.data || [];
+  const products: ApiProduct[] =
+    (productsQuery.data?.data as ApiProduct[]) || [];
 
-  const totalProducts = productsQuery.data?.meta?.total || products.length;
+  const orders: ApiOrder[] =
+    (ordersQuery.data?.data as ApiOrder[]) || [];
 
-  const totalOrders = ordersQuery.data?.meta?.total || orders.length;
+  const totalProducts =
+    productsQuery.data?.meta?.total || products.length;
+
+  const totalOrders =
+    ordersQuery.data?.meta?.total || orders.length;
 
   const pendingOrders = orders.filter(
     (order) => order.status === "pending",
@@ -60,7 +72,8 @@ export function useDashboard() {
     (order) => order.status === "confirmed",
   ).length;
 
-  const completedOrders = deliveredOrders + confirmedOrders;
+  const completedOrders =
+    deliveredOrders + confirmedOrders;
 
   const totalSpent = orders.reduce(
     (total, order) => total + order.totalAmount,
@@ -69,9 +82,14 @@ export function useDashboard() {
 
   const totalRevenue = orders
     .filter(
-      (order) => order.status === "delivered" || order.status === "confirmed",
+      (order) =>
+        order.status === "delivered" ||
+        order.status === "confirmed",
     )
-    .reduce((total, order) => total + order.totalAmount, 0);
+    .reduce(
+      (total, order) => total + order.totalAmount,
+      0,
+    );
 
   const recentOrders = orders.map((order) => ({
     id: order.id,
@@ -79,7 +97,9 @@ export function useDashboard() {
     secondaryDetail: `${order.orderItems?.length || 0} items`,
     amount: order.totalAmount,
     status: order.status,
-    date: order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "",
+    date: order.createdAt
+      ? new Date(order.createdAt).toLocaleDateString()
+      : "",
   }));
 
   const lowStockProducts = products
@@ -104,14 +124,20 @@ export function useDashboard() {
     recentOrders,
     lowStockProducts,
 
-    isLoading: productsQuery.isLoading || ordersQuery.isLoading,
+    isLoading:
+      productsQuery.isLoading || ordersQuery.isLoading,
 
-    isError: productsQuery.isError || ordersQuery.isError,
+    isError:
+      productsQuery.isError || ordersQuery.isError,
 
-    error: productsQuery.error || ordersQuery.error,
+    error:
+      productsQuery.error || ordersQuery.error,
 
     refetch: async () => {
-      await Promise.all([productsQuery.refetch(), ordersQuery.refetch()]);
+      await Promise.all([
+        productsQuery.refetch(),
+        ordersQuery.refetch(),
+      ]);
     },
   };
 }
