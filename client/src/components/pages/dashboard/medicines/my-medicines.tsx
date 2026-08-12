@@ -1,4 +1,3 @@
-// src/components/pages/dashboard/medicines/my-medicines.tsx
 "use client";
 
 import * as React from "react";
@@ -9,14 +8,17 @@ import { DataTable } from "../../../shared/data-table";
 import { getMedicineColumns, MedicineRow } from "./medicine.column";
 import { MedicineModal } from "./medicine-modal";
 import { toast } from "sonner";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { apiFetch } from "@/lib/api";
 
 interface ProductResponse {
   id: string;
   name: string;
+  description: string;
   price: number;
   stock: number;
+  image: string;
+  manufacturer: string;
+  categoryId: string;
   category?: {
     id: string;
     name: string;
@@ -28,6 +30,18 @@ interface ApiResponse<T> {
   message: string;
   data: T;
 }
+
+const mapProduct = (product: ProductResponse): MedicineRow => ({
+  id: product.id,
+  name: product.name,
+  description: product.description,
+  category: product.category?.name ?? "Uncategorized",
+  categoryId: product.categoryId,
+  price: product.price,
+  stock: product.stock,
+  image: product.image,
+  manufacturer: product.manufacturer,
+});
 
 export default function MyMedicines() {
   const [medicines, setMedicines] = React.useState<MedicineRow[]>([]);
@@ -44,27 +58,12 @@ export default function MyMedicines() {
     try {
       setIsLoading(true);
 
-      const res = await fetch(`${API_URL}/api/products`, {
-        credentials: "include",
-      });
-
-      const result: ApiResponse<ProductResponse[]> = await res.json();
-
-      if (!res.ok) {
-        throw new Error(result.message || "Failed to fetch medicines");
-      }
+      const result =
+        await apiFetch<ApiResponse<ProductResponse[]>>("/api/products");
 
       const products = Array.isArray(result.data) ? result.data : [];
 
-      const mappedMedicines: MedicineRow[] = products.map((product) => ({
-        id: product.id,
-        name: product.name,
-        category: product.category?.name ?? "Uncategorized",
-        price: product.price,
-        stock: product.stock,
-      }));
-
-      setMedicines(mappedMedicines);
+      setMedicines(products.map(mapProduct));
     } catch (error) {
       toast.error(
         error instanceof Error
@@ -77,53 +76,8 @@ export default function MyMedicines() {
   }, []);
 
   React.useEffect(() => {
-    let isMounted = true;
-    
-    const loadData = async () => {
-      try {
-        setIsLoading(true);
-        const res = await fetch(`${API_URL}/api/products`, {
-          credentials: "include",
-        });
-
-        const result: ApiResponse<ProductResponse[]> = await res.json();
-
-        if (!res.ok) {
-          throw new Error(result.message || "Failed to fetch medicines");
-        }
-
-        if (isMounted) {
-          const products = Array.isArray(result.data) ? result.data : [];
-          const mappedMedicines: MedicineRow[] = products.map((product) => ({
-            id: product.id,
-            name: product.name,
-            category: product.category?.name ?? "Uncategorized",
-            price: product.price,
-            stock: product.stock,
-          }));
-          setMedicines(mappedMedicines);
-        }
-      } catch (error) {
-        if (isMounted) {
-          toast.error(
-            error instanceof Error
-              ? error.message
-              : "An error occurred while fetching medicines"
-          );
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    loadData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+    setTimeout(() => fetchMedicines(), 0);
+  }, [fetchMedicines]);
 
   const handleOpenAddModal = () => {
     setModalMode("add");
@@ -139,99 +93,76 @@ export default function MyMedicines() {
 
   const handleDeleteMedicine = async (id: string) => {
     try {
-      const res = await fetch(`${API_URL}/api/products/${id}`, {
+      await apiFetch<ApiResponse<null>>(`/api/products/${id}`, {
         method: "DELETE",
-        credentials: "include",
       });
-
-      const result: ApiResponse<null> = await res.json();
-
-      if (!res.ok) {
-        toast.error(result.message || "Failed to delete medicine");
-        return;
-      }
 
       setMedicines((prev) => prev.filter((item) => item.id !== id));
 
       toast.success("Medicine deleted successfully");
-    } catch {
-      toast.error("An error occurred while deleting the medicine");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "An error occurred while deleting the medicine",
+      );
     }
   };
 
-  const handleFormSubmit = async (
-    data: Omit<MedicineRow, "id">,
-  ) => {
+  const handleFormSubmit = async (data: {
+    name: string;
+    description: string;
+    price: number;
+    stock: number;
+    image: string;
+    manufacturer: string;
+    category: string;
+  }) => {
     try {
       if (modalMode === "add") {
-        const res = await fetch(`${API_URL}/api/products`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            name: data.name,
-            price: data.price,
-            stock: data.stock,
-            categoryId: data.category,
-          }),
-        });
-
-        const result: ApiResponse<ProductResponse> = await res.json();
-
-        if (!res.ok) {
-          toast.error(result.message || "Failed to add medicine");
-          return;
-        }
-
-        const newMedicine: MedicineRow = {
-          id: result.data.id,
-          name: result.data.name,
-          category: result.data.category?.name ?? "Uncategorized",
-          price: result.data.price,
-          stock: result.data.stock,
-        };
-
-        setMedicines((prev) => [newMedicine, ...prev]);
-
-        toast.success("Medicine added successfully");
-        setIsModalOpen(false);
-        return;
-      }
-
-      if (modalMode === "edit" && activeMedicine) {
-        const res = await fetch(
-          `${API_URL}/api/products/${activeMedicine.id}`,
+        const result = await apiFetch<ApiResponse<ProductResponse>>(
+          "/api/products",
           {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
+            method: "POST",
             body: JSON.stringify({
               name: data.name,
+              description: data.description,
               price: data.price,
               stock: data.stock,
+              image: data.image,
+              manufacturer: data.manufacturer,
               categoryId: data.category,
             }),
           },
         );
 
-        const result: ApiResponse<ProductResponse> = await res.json();
+        setMedicines((prev) => [mapProduct(result.data), ...prev]);
 
-        if (!res.ok) {
-          toast.error(result.message || "Failed to update medicine");
-          return;
-        }
+        toast.success("Medicine added successfully");
 
-        const updatedMedicine: MedicineRow = {
-          id: result.data.id,
-          name: result.data.name,
-          category: result.data.category?.name ?? "Uncategorized",
-          price: result.data.price,
-          stock: result.data.stock,
-        };
+        setIsModalOpen(false);
+
+        return;
+      }
+
+      if (modalMode === "edit" && activeMedicine) {
+        const result = await apiFetch<ApiResponse<ProductResponse>>(
+          `/api/products/${activeMedicine.id}`,
+          {
+            method: "PATCH",
+            body: JSON.stringify({
+              name: data.name,
+              description: data.description,
+              price: data.price,
+              stock: data.stock,
+              image: data.image,
+              manufacturer: data.manufacturer,
+              categoryId: data.category,
+            }),
+          },
+        );
+
+        const updatedMedicine = mapProduct(result.data);
 
         setMedicines((prev) =>
           prev.map((item) =>
@@ -240,10 +171,15 @@ export default function MyMedicines() {
         );
 
         toast.success("Medicine updated successfully");
+
         setIsModalOpen(false);
       }
-    } catch {
-      toast.error("An error occurred while saving the medicine");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "An error occurred while saving the medicine",
+      );
     }
   };
 
@@ -262,8 +198,7 @@ export default function MyMedicines() {
         .includes(searchQuery.toLowerCase());
 
       const matchesCategory =
-        selectedCategory === "All" ||
-        medicine.category === selectedCategory;
+        selectedCategory === "All" || medicine.category === selectedCategory;
 
       return matchesSearch && matchesCategory;
     });
@@ -275,7 +210,7 @@ export default function MyMedicines() {
         onEdit: handleOpenEditModal,
         onDelete: handleDeleteMedicine,
       }),
-    [handleOpenEditModal, handleDeleteMedicine],
+    [medicines],
   );
 
   return (
@@ -316,9 +251,7 @@ export default function MyMedicines() {
           {categories.map((category) => (
             <Button
               key={category}
-              variant={
-                selectedCategory === category ? "default" : "outline"
-              }
+              variant={selectedCategory === category ? "default" : "outline"}
               size="sm"
               onClick={() => setSelectedCategory(category)}
               className="whitespace-nowrap rounded-xl text-xs"
@@ -334,10 +267,7 @@ export default function MyMedicines() {
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <DataTable
-          columns={columns}
-          data={filteredMedicines}
-        />
+        <DataTable columns={columns} data={filteredMedicines} />
       )}
 
       <MedicineModal

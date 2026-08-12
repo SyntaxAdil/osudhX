@@ -44,14 +44,14 @@ const sellerNav = [
   { title: "Medicines", href: "/dashboard/medicines", icon: Package },
   { title: "Inventory", href: "/dashboard/inventory", icon: Boxes },
   { title: "Orders", href: "/dashboard/orders", icon: ShoppingCart },
-  { title: "Profile", href: "/dashboard/profile", icon: Settings },
+  // { title: "Profile", href: "/dashboard/profile", icon: Settings },
 ];
 
 const customerNav = [
   { title: "Overview", href: "/dashboard", icon: LayoutDashboard },
   { title: "My Orders", href: "/dashboard/my-orders", icon: ShoppingCart },
   { title: "Wishlist", href: "/dashboard/wishlist", icon: Heart },
-  { title: "Profile", href: "/dashboard/profile", icon: Settings },
+  // { title: "Profile", href: "/dashboard/profile", icon: Settings },
 ];
 
 export function DashboardSidebar({

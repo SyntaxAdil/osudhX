@@ -19,20 +19,43 @@ export function MedicinesContainer() {
     sortOrder: "desc",
   });
 
-  const { data: categoriesResponse } = useCategories({ limit: 100 });
-  const categories = categoriesResponse?.data || [];
+  const {
+    categories,
+    isLoading: categoriesLoading,
+  } = useCategories();
+
+  const safeCategories = Array.isArray(categories)
+    ? categories
+    : [];
 
   const apiParams: ProductQueryParams = {
     ...params,
-    categoryId: params.categoryId === "all" ? undefined : params.categoryId,
+    categoryId:
+      params.categoryId === "all"
+        ? undefined
+        : params.categoryId,
   };
 
-  const { data: productsResponse, isLoading, error } = useProducts(apiParams);
-  const products: Product[] = productsResponse?.data || [];
+  const {
+    data: productsResponse,
+    isLoading: productsLoading,
+    error,
+  } = useProducts(apiParams);
+
+  const products: Product[] = Array.isArray(productsResponse?.data)
+    ? productsResponse.data
+    : [];
+
   const meta = productsResponse?.meta;
 
+  const isLoading = categoriesLoading || productsLoading;
+
   const handleSearchChange = (value: string) => {
-    setParams((prev) => ({ ...prev, search: value, page: 1 }));
+    setParams((prev) => ({
+      ...prev,
+      search: value,
+      page: 1,
+    }));
   };
 
   const handleCategoryChange = (value: string) => {
@@ -44,15 +67,26 @@ export function MedicinesContainer() {
   };
 
   const handleSortByChange = (value: string) => {
-    setParams((prev) => ({ ...prev, sortBy: value, page: 1 }));
+    setParams((prev) => ({
+      ...prev,
+      sortBy: value,
+      page: 1,
+    }));
   };
 
   const handleSortOrderChange = (value: "asc" | "desc") => {
-    setParams((prev) => ({ ...prev, sortOrder: value, page: 1 }));
+    setParams((prev) => ({
+      ...prev,
+      sortOrder: value,
+      page: 1,
+    }));
   };
 
   const handlePageChange = (newPage: number) => {
-    setParams((prev) => ({ ...prev, page: newPage }));
+    setParams((prev) => ({
+      ...prev,
+      page: newPage,
+    }));
   };
 
   return (
@@ -66,20 +100,24 @@ export function MedicinesContainer() {
         onSortByChange={handleSortByChange}
         sortOrder={params.sortOrder || "desc"}
         onSortOrderChange={handleSortOrderChange}
-        categories={categories}
+        categories={safeCategories}
       />
 
       {isLoading && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="h-[380px] w-full bg-muted/20 animate-pulse rounded-2xl" />
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {[...Array(8)].map((_, index) => (
+            <div
+              key={index}
+              className="h-[380px] w-full animate-pulse rounded-2xl bg-muted/20"
+            />
           ))}
         </div>
       )}
 
-      {error && (
-        <div className="text-center py-12 text-muted-foreground">
-          Failed to load medicines. Please try refreshing or check back later.
+      {error && !isLoading && (
+        <div className="py-12 text-center text-muted-foreground">
+          Failed to load medicines. Please try refreshing or check back
+          later.
         </div>
       )}
 
@@ -91,7 +129,7 @@ export function MedicinesContainer() {
       )}
 
       {!isLoading && !error && products.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {products.map((product) => (
             <MedicineCard
               key={product.id}
@@ -108,7 +146,10 @@ export function MedicinesContainer() {
       )}
 
       {!isLoading && !error && (
-        <MedicinePagination meta={meta} onPageChange={handlePageChange} />
+        <MedicinePagination
+          meta={meta}
+          onPageChange={handlePageChange}
+        />
       )}
     </div>
   );

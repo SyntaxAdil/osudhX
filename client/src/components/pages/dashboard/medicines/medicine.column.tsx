@@ -85,7 +85,7 @@ export const getMedicineColumns = ({
 
       return (
         <div className="flex items-center gap-2">
-          <Link href={`/dashboard/medicines/${medicine.id}`}>
+          <Link href={`/medicines/${medicine.id}`}>
             <Button
               variant="ghost"
               size="icon"

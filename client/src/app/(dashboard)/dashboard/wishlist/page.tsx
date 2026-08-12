@@ -1,7 +1,5 @@
-import React from "react";
+import WishlistClient from "../../../../components/pages/dashboard/whishlist/wishlist-client";
 
-const Whishlist = () => {
-  return <div>MyMedicines</div>;
-};
-
-export default Whishlist;
+export default function WishlistPage() {
+  return <WishlistClient />;
+}

@@ -73,12 +73,12 @@ export default function AvatarDropdown({ user }: { user: User }) {
               <span>Dashboard </span>
             </DropdownMenuItem>
           </Link>
-          <Link href={"/dashboard/profile"}>
+          {/* <Link href={"/dashboard/profile"}>
             <DropdownMenuItem className="cursor-pointer rounded-md py-2.5 px-3 font-medium text-muted-foreground hover:text-foreground transition-colors">
               <UserCircle className="size-4 mr-2.5 text-muted-foreground" />
               <span>Profile & Settings</span>
             </DropdownMenuItem>
-          </Link>
+          </Link> */}
         </DropdownMenuGroup>
 
         <DropdownMenuSeparator className="my-1 bg-border/40" />
