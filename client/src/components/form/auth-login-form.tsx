@@ -78,7 +78,7 @@ export function LoginForm() {
   };
 
   return (
-    <Card className="w-full max-w-md border-border/60 bg-card/80 text-card-foreground shadow-2xl backdrop-blur-xl">
+    <Card className="w-full max-w-md border-border/60 bg-card/80 text-card-foreground shadow-2xl backdrop-blur-xl my-8">
       <CardHeader className="space-y-3 pt-8 pb-3 text-center">
         <div className="mx-auto flex justify-center scale-105 transition-transform duration-300 hover:scale-110">
           <Logo />

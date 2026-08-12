@@ -1,4 +1,3 @@
-
 "use client";
 import Link from "next/link";
 import { Button } from "../ui/button";
@@ -35,7 +34,7 @@ const Navbar = () => {
   // user data
   const { data: session } = useSession();
   const rawUser = session?.user as unknown as CustomUser | undefined;
-
+  console.log(session?.user);
   const formattedUser: User | undefined = rawUser
     ? {
         id: rawUser.id,
