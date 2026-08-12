@@ -35,6 +35,7 @@ export const wishlistService = {
         method: "POST",
         body: JSON.stringify(data),
       },
+      true,
     );
   },
 
@@ -45,6 +46,8 @@ export const wishlistService = {
 
     return apiFetch<WishlistApiResponse<Wishlist[]>>(
       `/api/wishlist${queryString}`,
+      {},
+      true,
     );
   },
 
@@ -53,6 +56,8 @@ export const wishlistService = {
   ): Promise<WishlistApiResponse<Wishlist>> => {
     return apiFetch<WishlistApiResponse<Wishlist>>(
       `/api/wishlist/${id}`,
+      {},
+      true,
     );
   },
 
@@ -64,6 +69,7 @@ export const wishlistService = {
       {
         method: "DELETE",
       },
+      true,
     );
   },
 };

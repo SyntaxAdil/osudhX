@@ -54,6 +54,7 @@ export const productService = {
         method: "POST",
         body: JSON.stringify(data),
       },
+      true,
     );
   },
 
@@ -67,6 +68,7 @@ export const productService = {
         method: "PATCH",
         body: JSON.stringify(data),
       },
+      true,
     );
   },
 
@@ -78,6 +80,7 @@ export const productService = {
       {
         method: "DELETE",
       },
+      true,
     );
   },
 };

@@ -36,6 +36,7 @@ export const orderService = {
         method: "POST",
         body: JSON.stringify(data),
       },
+      true,
     );
   },
 
@@ -46,6 +47,8 @@ export const orderService = {
 
     return apiFetch<OrderApiResponse<Order[]>>(
       `/api/orders${queryString}`,
+      {},
+      true,
     );
   },
 
@@ -54,6 +57,8 @@ export const orderService = {
   ): Promise<OrderApiResponse<Order>> => {
     return apiFetch<OrderApiResponse<Order>>(
       `/api/orders/${id}`,
+      {},
+      true,
     );
   },
 
@@ -67,6 +72,7 @@ export const orderService = {
         method: "PATCH",
         body: JSON.stringify(data),
       },
+      true,
     );
   },
 
@@ -78,6 +84,7 @@ export const orderService = {
       {
         method: "PATCH",
       },
+      true,
     );
   },
 };

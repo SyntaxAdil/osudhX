@@ -10,30 +10,31 @@ interface TokenResponse {
 export const apiFetch = async <T>(
   endpoint: string,
   options: RequestInit = {},
+  requiresAuth = false,
 ): Promise<T> => {
   let token: string | undefined;
 
-  try {
-    const { data } =
+  if (requiresAuth) {
+    const { data, error } =
       await authClient.$fetch<TokenResponse>("/token");
 
-    token = data?.token;
-  } catch {
-    token = undefined;
-  }
+    if (error || !data?.token) {
+      throw new Error("Unauthorized");
+    }
 
-  const headers = new Headers(options.headers);
-
-  headers.set("Content-Type", "application/json");
-
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
+    token = data.token;
   }
 
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
     credentials: "include",
-    headers,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token && {
+        Authorization: `Bearer ${token}`,
+      }),
+      ...options.headers,
+    },
   });
 
   if (!response.ok) {

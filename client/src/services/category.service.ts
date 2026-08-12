@@ -54,6 +54,7 @@ export const categoryService = {
         method: "POST",
         body: JSON.stringify(data),
       },
+      true,
     );
   },
 
@@ -67,6 +68,7 @@ export const categoryService = {
         method: "PATCH",
         body: JSON.stringify(data),
       },
+      true,
     );
   },
 
@@ -78,6 +80,7 @@ export const categoryService = {
       {
         method: "DELETE",
       },
+      true,
     );
   },
 };
