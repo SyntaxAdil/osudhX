@@ -4,7 +4,7 @@ import Navbar from "../../components/shared/navbar";
 export default function MainLayout({
   children,
 }: {
-  children: React.ReactElement;
+  children: React.ReactNode;
 }) {
   return (
     <div className="min-h-screen antialiased">
