@@ -13,9 +13,9 @@ import { buttonVariants } from "../ui/button";
 
 const NAVIGATION_LINKS = [
   { name: "Home", href: "/" },
-  { name: "Products", href: "/products" },
+  { name: "Products", href: "/medicines" },
   { name: "Categories", href: "/categories" },
-  { name: "Orders", href: "/orders" },
+  
 ] as const;
 
 const SOCIAL_LINKS = [

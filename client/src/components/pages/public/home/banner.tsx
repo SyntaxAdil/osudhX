@@ -43,7 +43,7 @@ function Banner() {
             </Link>
           )}
 
-          <Link href="/products">
+          <Link href="/medicines">
             <Button variant="outline" className="h-11 px-6 cursor-pointer gap-2 text-base font-medium">
               <Search className="h-4 w-4" />
               <span>Browse Medicines</span>
