@@ -51,9 +51,7 @@ export function LoginForm() {
       router.push("/");
     } catch (error) {
       toast.error(
-        error instanceof Error
-          ? error.message
-          : "An unexpected error occurred",
+        error instanceof Error ? error.message : "An unexpected error occurred",
       );
     }
   };
@@ -64,7 +62,8 @@ export function LoginForm() {
 
       await signIn.social({
         provider: "google",
-        callbackURL: "/",
+        callbackURL: "https://osudhx.vercel.app/dashboard",
+        errorCallbackURL: "https://osudhx.vercel.app/login?error=oauth",
       });
     } catch (error) {
       toast.error(
@@ -202,7 +201,9 @@ export function LoginForm() {
               <FcGoogle className="mr-2 h-4 w-4" />
             )}
 
-            {isGoogleLoading ? "Signing in with Google..." : "Continue with Google"}
+            {isGoogleLoading
+              ? "Signing in with Google..."
+              : "Continue with Google"}
           </Button>
         </div>
       </CardContent>

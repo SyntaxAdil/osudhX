@@ -73,7 +73,8 @@ export function RegisterForm() {
 
       await signIn.social({
         provider: "google",
-        callbackURL: "/",
+        callbackURL: "https://osudhx.vercel.app/dashboard",
+        errorCallbackURL: "https://osudhx.vercel.app/login?error=oauth",
       });
     } catch (error) {
       toast.error(
