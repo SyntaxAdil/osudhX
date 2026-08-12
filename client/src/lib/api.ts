@@ -1,7 +1,6 @@
 import { authClient } from "./auth-client";
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 interface TokenResponse {
   token: string;
@@ -15,9 +14,8 @@ export const apiFetch = async <T>(
   let token: string | undefined;
 
   if (requiresAuth) {
-    const { data, error } =
-      await authClient.$fetch<TokenResponse>("/token");
-
+    const { data, error } = await authClient.$fetch<TokenResponse>("/token");
+    console.log(data, "token");
     if (error || !data?.token) {
       throw new Error("Unauthorized");
     }
