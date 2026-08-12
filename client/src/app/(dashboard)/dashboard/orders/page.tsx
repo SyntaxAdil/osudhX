@@ -1,9 +1,5 @@
-import React from 'react'
+import Orders from "@/components/pages/dashboard/orders/orders";
 
-const AllOrders = () => {
-  return (
-    <div>MyMedicines</div>
-  )
+export default function OrdersPage() {
+  return <Orders />;
 }
-
-export default AllOrders
