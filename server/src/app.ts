@@ -21,17 +21,14 @@ app.use(express.json());
 
 connectDatabase();
 
-// routes
 app.use("/api", router);
 
-// root
 app.get("/", (req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+  res.sendFile(path.join(process.cwd(), "public", "index.html"));
 });
 
-// docs
 app.get("/docs", (req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, "docs.html"));
+  res.sendFile(path.join(process.cwd(), "public", "docs.html"));
 });
 
 export default app;
