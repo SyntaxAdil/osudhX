@@ -29,6 +29,10 @@ app.get("/", (_req: Request, res: Response) => {
   res.sendFile(path.join(process.cwd(), "public", "index.html"));
 });
 
+app.get("/api/health",(_req:Request,res:Response)=>{
+  res.json({success:true,message:"API Working Fine."})
+})
+
 app.get("/docs", (_req: Request, res: Response) => {
   res.sendFile(path.join(process.cwd(), "public", "docs.html"));
 });
